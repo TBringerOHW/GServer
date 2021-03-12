@@ -10,14 +10,16 @@ namespace GServer.Messages
     /// <summary>
     /// Default message types used in internal host logic
     /// </summary>
-    [Reserve(0, 40)]
-    internal enum MessageType : short
+    [Reserve(0, 40)]//TODO Was internal previously
+    public enum MessageType : short
     {
         Empty = 0,
         Handshake = 1,
         Ack = 2,
         Token = 3,
         Ping = 4,
+        Resend = 5,
+        SendToEndPoint = 6
     }
 
     /// <summary>

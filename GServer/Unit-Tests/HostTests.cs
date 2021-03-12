@@ -244,10 +244,14 @@ namespace Unit_Tests
         }
 
         [Test]
-        public void OrderedIfPacketsLost() {
+        public void OrderedIfPacketsLost()
+        {
+            var sendMessagesAmount = 300;
+            
             ActionDispatcher.Start(1);
             var server = new Host(8080);
             var client = new Host(8081);
+            
             var messageCount = 0;
             MessageCounter lastMsg = 0;
             server.AddHandler(1023, (m, e) => {
@@ -255,27 +259,33 @@ namespace Unit_Tests
                 lastMsg++;
                 messageCount++;
             });
+            
             var connected = false;
             client.OnConnect = () => { connected = true; };
+            
             var ts1 = new TestSocketRnd(0.85);
             var ts2 = new TestSocketRnd(0.85);
             server.StartListen(ts1);
             client.StartListen(ts2);
+            
             var t1 = new Timer((o) => ServerTimer.Tick());
             t1.Change(10, 10);
             Thread.Sleep(1000);
             TestSocket.Join(ts1, ts2);
+            
             while (!connected) {
                 client.BeginConnect(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 8080));
                 Thread.Sleep(1000);
             }
-            for (var i = 0; i < 500; i++) {
+            
+            for (var i = 0; i < sendMessagesAmount; i++) {
                 ActionDispatcher.Enqueue(() => {
                     client.Send(new Message(1023, Mode.Reliable | Mode.Ordered, new byte[100]));
                 });
             }
+            
             Thread.Sleep(5000);
-            Assert.AreEqual(messageCount, 500);
+            Assert.AreEqual(sendMessagesAmount, messageCount);
             foreach (var connection in client.GetConnections()) {
                 Assert.AreEqual(0, connection.BufferCount, "client buffer not empty");
             }

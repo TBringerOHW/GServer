@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GServer.Containers\GServer.Containers.csproj" />
+      <ProjectReference Include="..\GServer\GServer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Unity" />
+    </ItemGroup>
+
+</Project>

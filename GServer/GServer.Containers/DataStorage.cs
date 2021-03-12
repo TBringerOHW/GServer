@@ -12,6 +12,8 @@ namespace GServer.Containers
         private readonly BinaryReader Reader;
         private readonly BinaryWriter Writer;
 
+        #region [Constructors]
+
         private DataStorage(byte[] buffer) {
             Stream = new MemoryStream(buffer);
             Reader = new BinaryReader(Stream);
@@ -30,9 +32,15 @@ namespace GServer.Containers
             return new DataStorage();
         }
 
+        #endregion
+
         public byte[] Serialize() {
             return Stream.ToArray();
         }
+
+        #region [Push]
+
+        #region [ValueBased]
 
         public DataStorage Push(byte val) {
             if (Writer == null)
@@ -126,6 +134,132 @@ namespace GServer.Containers
             return this;
         }
 
+        #endregion
+        
+        #region [KeyBased]
+        public DataStorage Push(string key, byte val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, short val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, int val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, long val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, bool val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, char val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, double val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, decimal val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, float val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, string val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, Guid val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val.ToByteArray());
+            return this;
+        }
+
+        public DataStorage Push(string key, byte[] val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            Writer.Write(val);
+            return this;
+        }
+
+        public DataStorage Push(string key, IDeepSerializable val)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(key);
+            val.PushToDs(this);
+            return this;
+        }
+        
+        #endregion
+
+        #endregion
+
+        #region [Read]
+        
         public byte ReadByte() {
             if (Reader == null)
                 throw new Exception("DataStorage in write only mode");
@@ -198,6 +332,110 @@ namespace GServer.Containers
                 throw new Exception("DataStorage in write only mode");
             return new Guid(Reader.ReadBytes(16));
         }
+
+        #endregion
+        
+        #region Auto serialize methods
+        public Pair<Type, object> ReadPair()
+        {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+            var typeName = Reader.ReadString();
+            object obj = ReadObject(typeName);
+
+            Pair<Type, object> pair = new Pair<Type, object>(Type.GetType(typeName), obj);
+            return pair;
+        }
+
+        public object ReadObject(string typeName)
+        {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+
+            object obj = null;
+
+            switch (typeName)
+            {
+                case "System.Int32":
+                    obj = ReadInt32();
+                    break;
+                case "System.Byte":
+                    obj = ReadByte();
+                    break;
+                case "System.Boolean":
+                    obj = ReadBoolean();
+                    break;
+                case "System.Char":
+                    obj = ReadChar();
+                    break;
+                case "System.Decimal":
+                    obj = ReadDecimal();
+                    break;
+                case "System.Double":
+                    obj = ReadDouble();
+                    break;
+                case "System.Single":
+                    obj = ReadFloat();
+                    break;
+                case "System.Int64":
+                    obj = ReadInt64();
+                    break;
+                case "System.Int16":
+                    obj = ReadInt16();
+                    break;
+                case "System.String":
+                    obj = ReadString();
+                    break;
+                default:
+                    break;
+            }
+
+            return obj;
+        }
+
+        public DataStorage Push(object obj)
+        {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+
+            string typ = obj.GetType().FullName;
+            Writer.Write(typ);
+            switch (typ)
+            {
+                case "System.Int32":
+                    Writer.Write(int.Parse(obj.ToString()));
+                    break;
+                case "System.Byte":
+                    Writer.Write(byte.Parse(obj.ToString()));
+                    break;
+                case "System.Boolean":
+                    Writer.Write(bool.Parse(obj.ToString()));
+                    break;
+                case "System.Char":
+                    Writer.Write(char.Parse(obj.ToString()));
+                    break;
+                case "System.Decimal":
+                    Writer.Write(decimal.Parse(obj.ToString()));
+                    break;
+                case "System.Double":
+                    Writer.Write(double.Parse(obj.ToString()));
+                    break;
+                case "System.Single":
+                    Writer.Write(float.Parse(obj.ToString()));
+                    break;
+                case "System.Int64":
+                    Writer.Write(long.Parse(obj.ToString()));
+                    break;
+                case "System.Int16":
+                    Writer.Write(short.Parse(obj.ToString()));
+                    break;
+                case "System.String":
+                    Writer.Write(obj.ToString());
+                    break;
+            }
+            return this;
+        } 
+        #endregion
 
         public byte[] ReadToEnd() {
             if (Reader == null)

@@ -143,8 +143,8 @@ namespace GServer
                 }
             }
         }
-
-        private static void InvokeHandler(ReceiveHandler handler, Message msg, Connection.Connection connection) {
+        protected virtual void InvokeHandler(ReceiveHandler handler, Message msg, Connection.Connection connection)
+        {
             var async = handler.GetType().GetCustomAttributes(typeof(AsyncOperationAttribute), false).Length > 0;
             if (async) {
                 ThreadPool.QueueUserWorkItem((o) => handler.Invoke(msg, connection));
@@ -227,7 +227,7 @@ namespace GServer
         /// </summary>
         /// <param name="host">Socket implementation</param>
         public void StartListen(ISocket host) {
-            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount * 4);
+            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount * 8);
             _isListening = true;
             _client = host;
             _listenThread.Start();

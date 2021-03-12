@@ -147,7 +147,8 @@ namespace GServer.Connection
             LastActivity = DateTime.Now;
         }
 
-        internal void Disconnect() {
+        //TODO Was internal previously
+        public void Disconnect() {
             if (Disconnected != null)
                 Disconnected.Invoke(this);
         }

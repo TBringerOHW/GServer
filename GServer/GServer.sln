@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GServer.Plugins", "GServer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GServer.Containers", "GServer.Containers\GServer.Containers.csproj", "{4238A9A0-DA81-4E1C-9345-C5BBAE9B4EA6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GServer.RPC", "GServer.RPC\GServer.RPC.csproj", "{EC41889E-07F7-48B6-BDA4-C7E711A3A5A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,8 @@ Global
 		{4238A9A0-DA81-4E1C-9345-C5BBAE9B4EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4238A9A0-DA81-4E1C-9345-C5BBAE9B4EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4238A9A0-DA81-4E1C-9345-C5BBAE9B4EA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC41889E-07F7-48B6-BDA4-C7E711A3A5A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC41889E-07F7-48B6-BDA4-C7E711A3A5A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
