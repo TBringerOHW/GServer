@@ -2,16 +2,19 @@
 using System.Threading;
 using GServer.Messages;
 
-
 namespace GServer.RPC
 {
     public class BaseSyncDispatcher
+#if UNITY_ENGINE
+        : MonoBehaviour
+#endif
     {
         private static BaseSyncDispatcher _instance;
         private static volatile bool _queued = false;
         protected static readonly List<HandlerAction> Backlog = new List<HandlerAction>();
 
         protected static List<HandlerAction> Actions = new List<HandlerAction>();
+        
 #if UNITY_ENGINE
         private static Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
 #endif
@@ -41,10 +44,10 @@ namespace GServer.RPC
                 _queued = true;
             }
         }
-        
-#region [Platform Depended Code]        
-#if UNITY_ENGINE
 
+        #region [Platform Depended Code]
+
+#if UNITY_ENGINE
         private static Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -84,29 +87,35 @@ namespace GServer.RPC
                 NetworkViewCoroutines.Remove(hash);
             }
         }
-        
+
 #else
         private static Timer _timer;
-        
+
         internal static void StartSync(NetworkView networkView)
         {
             var syncPeriod = (int) networkView.GetSyncPeriod();
-            _timer = new Timer(o=> SyncAction(networkView));
-            _timer.Change(20,syncPeriod);
+
+            if (_timer != null)
+            {
+                StopSync(networkView);
+            }
+
+            _timer = new Timer(o => SyncAction(networkView));
+            _timer.Change(20, syncPeriod);
         }
 
-        internal static void StopSync(NetworkView networkView)
+        internal static void StopSync(NetworkView networkView) //Param required for unity dispatcher version.
         {
             _timer.Dispose();
             _timer = null;
         }
-        
+
         private static void SyncAction(NetworkView networkView)
         {
-                networkView.SyncNow();
+            networkView.SyncNow();
         }
 #endif
-#endregion
-        
+
+        #endregion
     }
 }

@@ -165,7 +165,7 @@ namespace GServer.RPC
                 return null;
             }
 
-            return c + "#" + num;
+            return $"[NetworkView_#{_hash}].{c}#{num}";//_hash + "_" + c + "#" + num;
         }
 
         internal IMarshallable GetArgument(string name)
@@ -184,8 +184,10 @@ namespace GServer.RPC
                 }
 
                 var method = GetSyncMethod(c);
+                
                 var ds = DataStorage.CreateForWrite();
                 ds.Push(method);
+                
                 var fields = GetClassFields(c);
                 if (fields.Count == 0)
                 {
@@ -283,7 +285,9 @@ namespace GServer.RPC
         {
             method = GetUniqueClassString(c) + "." + method;
             var helper = GetHelper(method);
+            
             if (helper == null) return;
+            
             var client = false;
             var server = false;
             switch (helper.type)
@@ -301,6 +305,7 @@ namespace GServer.RPC
             }
 
             if (client) ClientCall(helper, args);
+            
             if (server)
             {
                 var ds = DataStorage.CreateForWrite();

@@ -101,15 +101,15 @@ namespace GServer.Messages
             set { Header.MessageId = value; }
         }
 
-        internal bool Reliable {
+        public bool Reliable {
             get { return Header.Reliable; }
         }
 
-        internal bool Ordered {
+        public bool Ordered {
             get { return Header.Ordered; }
         }
 
-        internal bool Sequenced {
+        public bool Sequenced {
             get { return Header.Sequenced; }
         }
 

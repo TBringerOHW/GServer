@@ -70,20 +70,30 @@ namespace GServer
             _isListening = false;
             _connectionManager = new ConnectionManager();
             _receiveHandlers = new Dictionary<short, IList<ReceiveHandler>>();
+            
             AddHandler((short) MessageType.Token, (m, c) => {
                 _hostToken = m.ConnectionToken;
+
                 if (OnConnect != null) {
                     OnConnect.Invoke();
                 }
             });
+            
             AddHandler((short) MessageType.Handshake, (m, c) => {
                 if (!EnableHandshake) return;
+                
                 if (ConnectionCreated != null) {
                     ConnectionCreated.Invoke(c);
                 }
+                
                 SendToken(c);
             });
-            AddHandler((short) MessageType.Ack, (m, c) => { c.ProcessAck(m); });
+            
+            AddHandler((short) MessageType.Ack, (m, c) =>
+            {
+                c.ProcessAck(m);
+            });
+            
             ServerTimer.OnTick += ServerTick;
         }
 
@@ -310,16 +320,19 @@ namespace GServer
         /// </summary>
         /// <param name="ep">server endpoint</param>
         /// <returns></returns>
-        public bool BeginConnect(IPEndPoint ep) {
+        public bool BeginConnect(IPEndPoint ep) 
+        {
             try {
                 _client.Connect(ep);
             }
             catch {
                 return false;
             }
+            
             var buffer = Message.Handshake;
             var p = new Packet(buffer);
             _client.Send(p.Serialize());
+            
             return true;
         }
 
