@@ -1,9 +1,589 @@
-﻿NUnit 3.6.1 - February 26, 2017
+## NUnit 3.13.1 - January 31, 2021
+
+This release addresses several misses with the new `FixtureLifeCycle` attribute, switches to using [SourceLink](https://github.com/dotnet/sourcelink) and NuGet [snupkg](https://docs.microsoft.com/en-us/nuget/create-packages/symbol-packages-snupkg) packages for debugging into NUnit from your unit tests. It also addresses issues with the time format of ignored and explicit tests in the test results file.
+
+#### Issues Resolved
+
+* 2339 Wrong date format in Ignored TestFixtures
+* 3715 FixtureLifeCycle(LifeCycle.InstancePerTestCase) Not working with TestFixtureSource
+* 3716 Assembly level FixtureLifeCycle(LifeCycle.InstancePerTestCase) doesn't work
+* 3724 Test start and end time should end with Z
+* 3726 Assert EqualTo().Within().Seconds does not work with DateTimes in NUnit 3.13
+* 3729 AppVeyor builds failing
+* 3736 AreEqual.Within throws on failure with non-numeric types
+* 3743 Parametrized tests do not respect FixtureLifeCycle.InstancePerTestCase
+* 3745 After upgrading to NUnit 3.13.0 the debugger enters NUnit code despite having checked "Enable Just My Code"
+
+## NUnit 3.13 - January 7, 2021
+
+The [`FixtureLifeCycle`](https://docs.nunit.org/articles/nunit/writing-tests/attributes/fixturelifecycle.html) attribute has been added to indicate that an instance for a test fixture or all test fixtures in an assembly should be constructed for each test within the fixture or assembly.
+
+This attribute may be applied to a test fixture (class) or to a test assembly. It is useful in combination with the [Parallelizable Attribute](https://docs.nunit.org/articles/nunit/writing-tests/attributes/parallelizable.html) so that a new instance of a test fixture is constructed for every test within the test fixture. This allows tests to run in isolation without sharing instance fields and properties during parallel test runs. This make running parallel tests easier because it is easier to make your tests thread safe.
+
+This release also fixes several issues running tests in .NET 5.0. If your tests target .NET 5.0, we recommend updating to this release.
+
+#### Issues Resolved
+
+* 34 Async testing with F#
+* 52 Self-contained item in array causes stack overflow
+* 1394 Has.Property cannot see explicit interface implementation properties
+* 1491 Add a CLA to the project
+* 1546 NUnitEqualityComparer.GetEquatableGenericArguments should explicitly order arguments
+* 1809 Assert.AreEqual fails for Complex on Linux
+* 1897 EqualTo().Using() prevents caller from comparing strings to anything else
+* 2211 Request: Add support of indexers to the PropertyConstraint
+* 2477 Parameterized fixture with Explicit attribute can not be run when selected by name
+* 2574 Instance-per-test-case feature
+* 2680 Deprecate the DebugWriter class
+* 3611 Properties are shown when --explore:nunit3 is run on entire project, but omitted when using the --where clause
+* 3054 Don't enforce `[Timeout]` when debugger is attached
+* 3075 Complete RunAsyncAction tests in FrameworkControllerTests
+* 3228 Modulo bias is present in Randomizer.NextDecimal(decimal)
+* 3240 Automate uploading of test results to Azure Pipelines
+* 3243 Azure DevOps does not build release branch
+* 3249 Pin GitLink version to speed up Cake script
+* 3251 RawInt32() can't use Next since the maximum is always exclusive and it would never return int.MaxValue
+* 3252 Timeout of 100 ms in TestTimeoutDoesNotStopCompletion occasionally fails the macOS build
+* 3253 Chance of failure in random bias tests is not sufficiently low for CI
+* 3256 Building under VS2019
+* 3257 Running under mono
+* 3259 The type of an Array isn't inferred from properly
+* 3264 Test that IRepeatTest only gets attributes via the IMethodInfo interface
+* 3275 Enable setting IgnoreUntilDate in TestCaseData.Ignore
+* 3279 Improve failure message from UniqueItemsConstraint
+* 3282 TimeoutAttribute makes all Assertions count as failure
+* 3283 ExecutionContext is flowed between unrelated tests
+* 3286 Testing for equality using a predicate throws exception for collections
+* 3290 'Good first issue' or 'help wanted' issue count badge
+* 3296 ExceptionHelper.GetExceptionMessage(Exception ex) should tolerate exceptions from exceptions
+* 3302 Incorrect formatting of failure message if test fails with Assert.Multiple
+* 3303 Check type of actual argument using consistent helper method
+* 3304 CheckString should not be a generic method
+* 3305 Remove unused methods
+* 3307 Sporadic GetResultIsNotCalledUntilContinued failure
+* 3308 Fix disposal in EnumerablesComparer
+* 3309 Simplify code in EventListenerTextWriter
+* 3311 Minimal unit of DateTime in the report when Test was started/ended
+* 3312 Simplify ProviderCache and make it instantiable since it is intentionally not thread safe
+* 3315 Assert.DoesNotThrow() stopped working as it was previously
+* 3318 Fix AwaitAdapter terminology
+* 3321 Keep dependencies up to date
+* 3322 Speed up build script by removing unnecessary builds
+* 3324 Broken link in CHANGES.md
+* 3328 Problems when using a mixture of Not and Or filters in NUnit framework 3.12.0
+* 3331 Contains.Key no longer working for IDictionary
+* 3338 Azure Pipelines is failing on Linux for both netstandard 1.4 and 2.0
+* 3356 SetUpFixture not run
+* 3368 Tests with warnings are not added to console TestResult.xml's total count
+* 3383 Drop netstandard1.4 and stop testing on end-of-life versions of .NET Core
+* 3389 Show names of parameters
+* 3390 SetUpFixture not being triggered when running tests using --testlist
+* 3392 Use of Thread.CurrentPrincipal in Blazor/WASM
+* 3393 Nuget Package Not Signed
+* 3395 Randomizer.NextString() can probably be sped up
+* 3408 Save test results as build artifacts
+* 3411 Update nuspec file to mention support for NET Standard 2.0+
+* 3414 Azure pipelines are failing on Linux
+* 3415 Azure CI: Still publish test results on failure
+* 3423 TestResult.cs casts ITestResult to TestResult
+* 3447 Is.EqualTo(...).Using(StructuralComparisons.StructuralEqualityComparer or StructuralComparer) not working
+* 3452 Assertions that use an existing Regex
+* 3453 Visibility of SetUp/TearDown Methods
+* 3454 Pre-Filtering in NUnitLite has problems
+* 3464 Improve debugging experience
+* 3470 Assertion for key-value-pair
+* 3475 Our XML comments are using `<code>` (block element) instead of `<c>` (inline element)
+* 3485 Should we make MultipleAssertException.TestResult maybe-null or obsolete two constructors?
+* 3496 Adding data dictionary should not add a trailing newline
+* 3497 Fix mixed line endings in Git
+* 3503 Remove implicit cast from ITestResult to TestResult
+* 3505 Better failure messages for Subset and Superset constraints
+* 3506 ValueTuple tests now running if not targeting NET35
+* 3536 Reduce newly added API surface
+* 3542 Update NuGet Package Icons
+* 3547 DelayedConstraint constrains does not preserve original result additional information
+* 3551 Add PrivateAssets="all" to analyzer dependency
+* 3552 MessagePumpStrategy does not work for WPF on netcoreapp3.0 and upwards
+* 3559 Disables the DOC100 suggestion and reverts the added paragraph elements
+* 3563 `[Suggestion]` Improve TextMessageWriter output for numeric values
+* 3565 .NET 5 issue with PlatformAttribute
+* 3583 Avoid using a culture-sensitive EndsWith in common code
+* 3592 Add classname and methodname to the start-test event
+* 3594 Reduce memory overhead of TestNameGenerator
+* 3596 AreAlmostEqualUlps throws OverflowException for -0
+* 3598 Fix typo
+* 3608 `[Platform]` attribute fails with DllNotFoundException in WASM
+* 3616 Extend Is.Empty to work for Guid.Empty
+* 3618 NUnit has a P/Invoke whose native function doesn't exist on all platforms
+* 3622 EmptyDirectoryConstraint doesn't need to enumerate entire directory contents
+* 3632 Assert.Inconclusive() reports failed when timeout used
+* 3636 NUnitLite filtering fails if space in test name before (
+* 3641 Type implementing `IComparable<float>` (or any `IComparable`) fails comparison.
+* 3647 Fix exception under blazor 5
+* 3650 Build issue with the latest .NET SDK 5.0.100-rc.2
+* 3657 Add Framework Version to the XML
+* 3662 TestContext.CurrentContext.CurrentRepeatCount only contains retry count not the repeat count
+* 3667 Create FrameworkPackageSetting to set CurrentCulture and CurrentUICulture
+* 3676 Parallelizeable tests sometimes shares memory
+* 3679 Issue 3390: Do not prefilter relevant SetUpFixtures
+* 3694 Async tests causes double failure messages
+* 3699 Compilation of netcoreapp3.1 targets fails on CI (both AppVeyor and Azure Pipelines)
+
+### NUnit 3.12 - May 14, 2019
+
+This release of NUnit finally drops support for .NET 2.0. If your application still
+targets .NET 2.0, your tests will need to target at least .NET 3.5. Microsoft ended
+support for .NET 2.0 on July 12, 2011. Microsoft recommends that everyone migrate
+to at least .NET Framework 3.5 SP1 for security and performance fixes.
+
+This release dramatically improves NUnit support for async tests including returning
+ValueTask and custom tasks from tests, improved handling of SynchronizationContexts
+and better exception handling.
+
+The .NET Standard 2.0 version of NUnit continues to gain more functionality that
+is found in the .NET 4.5 version of the framework like setting the ApartmentState
+and enabling Timeout on tests.
+
+#### Issues Resolved
+
+ * 474 TypeHelperTests.cs is orphaned
+ * 999 Support multiple TestOf attributes per test
+ * 1638 TimeoutAttribute not available when targeting netcoreapp framework
+ * 2168 ThrowsAsync reports OperationCanceledException as TaskCanceledException
+ * 2194 How to use `Contains.Substring` with `And`
+ * 2286 Add support for custom Task (i.e. ValueTask)
+ * 2579 AppVeyor Test Failures under .NET 3.5
+ * 2614 TestExecutionContext.CurrentContext is saved in Remoting CallContext between test runs
+ * 2696 Getting WorkerId fails in debug
+ * 2772 Random failing of parallel test run: Unhandled Exception: System.InvalidOperationException: Stack empty.
+ * 2975 ComparisonConstraints are allocating string on construction
+ * 3014 Timeout failures on MacOS
+ * 3023 NUnit runner fails when test method returns ValueTask<>
+ * 3035 Apartment state can't be used for .NET Standard 2.0 tests
+ * 3036 Apartment state can't be used for .NET Standard 2.0 tests
+ * 3038 TestName in TestCase attribute not validated to be not empty
+ * 3042 RequiresThreadAttribute allows ApartmentState.Unknown, unlike ApartmentAttribute
+ * 3048 Add .idea folder to .gitignore
+ * 3053 Conversion from TestCase string parameter to DateTimeOffset
+ * 3059 Constraint Throws.Exception does not work with async return value
+ * 3068 First Chance Exception in RuntimeFramework
+ * 3070 End support for .NET Framework 2.0 (released in 2005)
+ * 3073 CollectionAssert.AreEquivalent fails for ValueTuple Wrapped Dictionary
+ * 3079 Regression from 3.10 to 3.11: Range in bytes
+ * 3082 Is.Ordered.By
+ * 3085 XML Test-Suite Assembly does not contain DLL path anymore
+ * 3089 Remove outdated comment
+ * 3093 Tests having TaskLike objects as their return type throws Exception
+ * 3094 Bad error message if collections have different types
+ * 3104 Removed NET20 compile output
+ * 3105 Add tests for use of ApartmentState.Unknown in RequiresThreadAttribute
+ * 3107 Declare class in Program.cs provided with NUnitLite Nuget package static
+ * 3109 Azure DevOps build fails in Save package artifacts
+ * 3124 Switch copyright notice
+ * 3128 Correct documentation on ParallelScope
+ * 3137 Fix doc-comments in NUnitTestAssemblyRunner
+ * 3138 Assert.Ignore breaks when a Task is returned w/o using async/await
+ * 3139  Add Azure pipelines badge to frontpage
+ * 3144 Retry attribute should not derive from PropertyAttribute
+ * 3145 Capture additional exception details in the test output
+ * 3156 UnexpectedExceptionTests should tolerate Mono on Azure DevOps Ubuntu
+ * 3159 Make tests more tolerant
+ * 3161 https url repo
+ * 3166 Allow static SetUpFixture classes
+ * 3171 Incorrect type for Test Fixtures when using running explore with a filter
+ * 3175 Improve user-facing messages
+ * 3181 Template Based Test Naming - Incorrect truncation for individual arguments
+ * 3186 Fix licenseUrl element in nuspec, will be deprecated
+ * 3193 Cake Build Fails with Visual Studio 2019
+ * 3195 Drop or at least make Travis not required?
+ * 3231 Breaking change in filter functionality between framework 2.7 and 3.11
+ * 3209 Test fail when posting to SynchronizationContext.Current
+ * 3211 Fix logging
+ * 3218 Remove todos from the code base
+ * 3222 Our build script tests hang when run with Mono on Windows
+ * 3233 AndConstraint should write additional information from failed constraint
+
+### NUnit 3.11 - October 6, 2018
+
+ * More informative assertion messages
+ * PlatformAttribute is available on .NET Standard and now detects .NET Core
+ * ValuesAttribute now works with nullable types
+ * Async tests detecting and running Windows Forms or WPF message pumps rather than deadlocking
+ * Support for UWP 10.0 is back via .NET Standard 1.4
+
+#### Issues Resolved
+
+ * 352 Test with infinite loop in TearDown cannot be aborted
+ * 452 Deprecate the existing Chocolatey framework package
+ * 660 Order dependence of And and Or constraints should be documented
+ * 1200 async test + Apartment(ApartmentState.STA) => await not returning on STA thread
+ * 2123 Task.Run inside a test will result in deadlock if a control was created previously
+ * 2146 Assert.That with a Throws constraint does not provide as much info as Assert.Throws
+ * 2427 PropertyConstraint throws away the more helpful message in the base constraint result
+ * 2432 Ability to exclude/include the platform .NET Core
+ * 2450 NullReferenceException in ExceptionHelper.BuildMessage on Mono
+ * 2536 SetArgDisplayNames for TestCaseData and TestFixtureData
+ * 2611 Enable .NET Standard 1.6 tests on non-Windows
+ * 2693 Ensure that resharper settings are consistent with the editorconfig configuration
+ * 2757 Broken `char` comparison in v3.7 and higher
+ * 2759 Test fails with "No arguments were provided" error when no values returned from IParameterDataSource
+ * 2761 Infinite loop in nunit 3.9
+ * 2781 Fixed precompiler typo
+ * 2786 Timeout value not resetting on Retry of failed test
+ * 2790 Removing ITypeInfo abstraction
+ * 2798 [Request] Show actual count value when test fail on Has.Exactly(x).Items
+ * 2814 Remove public marker types
+ * 2819 Only run AppVeyor PR build against open PRs
+ * 2821 Save and restore the SynchronizationContext before and after each test case
+ * 2823 SetUp failed for test fixture - Array was not a one-dimensional array.  Issue seems related to byte[,] method parameters
+ * 2829 Obsoletion warning for DataAttribute
+ * 2831 Regular "BusyExecIdle after 200 milliseconds delay" CI failures
+ * 2833  Use longer BusyExecIdle to avoid CI failures
+ * 2836 NUnit.Framework.Does cannot be extended
+ * 2837 DictionaryContainsKeyConstraint behaviour is inconstant with Dictionary.ContainsKey when the dictionary uses a custom Comparer
+ * 2842 Supporting inheritance of Assert and related classes
+ * 2854 Has.All.../Has.None... - show non-matching items in error message
+ * 2863 Make tests robust without depending on the order of attributes
+ * 2867 Skip executing TestCaseSources for tests which are not included in the filter
+ * 2876 Implement Discovery-time filtering for NUnitLite
+ * 2883 Our public ConcurrentQueue causes type conflicts
+ * 2885 Copy/paste error in Assert.That documentation
+ * 2887 NETStandard 1.3 support dropped in NUnit 3.10
+ * 2896 Some tests are silently skipped on netstandard1.x since #2796
+ * 2898 AssemblyPath contains invalid charaters
+ * 2901 Values attribute support for nullable bool and enum types
+ * 2923 Update outdated CategoryAttribute xmldoc
+ * 2928 Improve error message on EmptyConstraint
+ * 2929 Added NUnit XML schemas
+ * 2940 Increase StackTracesAreFiltered amount to 5
+ * 2955 Potential threading issue in IsolatedContext
+ * 2965 NuGet Package : Add `repository` metadata.
+ * 2970 InvalidCastException @ NUnit.Framework.TestFixtureSourceAttribute.BuildFrom
+ * 2979 Warn.If in Assert.Multiple
+ * 2994 Error in .NET Standard 1.4 DictionaryContainsKeyConstraint MetadataToken compatibility methods
+ * 2996 Remove unused enum
+ * 3009 Fix failing CI Builds by upgrading to NUnit Console 3.9.0
+ * 3020 Upgrade nunit-vs-adapter to 3.10 for nUnit 3.11
+ * 3024 Unable to add `.IgnoreCase` modifier to an `AnyOf` constraint in collection constraints
+ * 3032 APIs to restore before 3.11
+
+### NUnit 3.10.1 - March 12, 2018
+
+Added a namespace to the props file included in the NuGet package to make it
+compatible with versions of Visual Studio prior to VS 2017.
+
+### NUnit 3.10 - March 12, 2018
+
+This release adds a .NET Standard 2.0 version of the framework which re-enables
+most of the features that have been missing in our earlier .NET Standard builds
+like parallelism, timeouts, directory and path based asserts, etc. It also contains
+numerous bug fixes and smaller enhancements. We've improved our XML docs,
+fixed performance issues and added more detail to Multiple Asserts.
+
+This release also contains source-indexed PDB files allowing developers to debug
+into the NUnit Framework. This allows you to track down errors or see how the
+framework works.
+
+In order to support the .NET Standard 2.0 version, the NUnit project switched to
+the new CSPROJ format and now requires Visual Studio 2017 to compile. This only
+effects people contributing to the project. NUnit still supports building and
+compiling your tests in older .NET IDEs and NUnit still supports older versions
+of the .NET Framework back to 2.0. For contributors, NUnit can now compile all
+supported targets on Windows, Linux and Mac using the Cake command line build.
+
+#### Issues Resolved
+
+ * 1373 Setting with a null value
+ * 1382 Use array argument contents in name of parameterized tests rather than just array type.
+ * 1578 TestContext.CurrentTest exposes too much internal info
+ * 1678 Result Message: OneTimeSetUp: Category name must not contain ',', '!', '+' or '-'
+ * 1944 Removing Compact Framework workarounds
+ * 1958 System.Reflection.TargetInvocationException after run finished
+ * 2033 Nameof refactor
+ * 2202 Best practices for XML doc comments
+ * 2325 Retry attribute doesn't retry the test.
+ * 2331 Repo does not build in VS without running `build -t build` first
+ * 2405 Improve PropertyConstraint error output
+ * 2421 Publishing symbols with releases
+ * 2494 CollectionAssert.AllItemsAreUnique() very slow
+ * 2515 Retarget Solution to use the New CSPROJ Format
+ * 2518 Bug in CollectionAssert.AreEqual for ValueTuples.
+ * 2530 Running tests on main thread. Revisiting #2483
+ * 2542 NUnit does not support parallelism on .NET Core 2.0
+ * 2555 CI timeout: NUnit.Framework.Assertions.CollectionAssertTest.PerformanceTests
+ * 2564 Add minClientVersion to .nuspec files
+ * 2566 Refactor `SimpleEnumerableWithIEquatable` test object
+ * 2577 Warning in TearDown is inconsistent with Assertion failure
+ * 2580 Remove unused defines
+ * 2591 NUnitEqualityComparer.Default should be replaced with new NUnitEqualityComparer()
+ * 2592 Add .props with ProjectCapability to suppress test project service GUID item
+ * 2608 Culture differences on .NET Core on non-Windows causes test failures
+ * 2622 Fix flakey test
+ * 2624 Prevent emails for successful builds on Travis
+ * 2626 SetUp/TearDown methods are invoked multiple times before/after test in .NET Standard targeted projects
+ * 2627 Breaking change in CollectionAssert.AllItemsAreUnique with NUnit 3.9
+ * 2628 Error during installing tools when running build script
+ * 2630 Framework throws NullReferenceException if test parameter is marked with [Values(null)]
+ * 2632 Parallel tests are loading 100% CPU when nested SetUpFixture exists
+ * 2639 ValuesAttribute causes ExpectedResult to have no effect
+ * 2647 Add Current Attempt indicator in TestContext for use with RetryAttribute
+ * 2654 Address feedback from @oznetmaster
+ * 2656 NuGet package links to outdated license
+ * 2659 Naming Errors
+ * 2662 NullReferenceException after parallel tests have finished executing
+ * 2663 Building NUnit .NET 4.5 in VS2017 fails
+ * 2669 Removed vestigial build script helper method
+ * 2670 Invalid assemblies no longer give an error message
+ * 2671 Ensure that FailureSite.Child is used where appropriate.
+ * 2685 Remove Rebracer file
+ * 2688 Assert.Throws swallows console output
+ * 2695 MultipleAssertException doesn't provide proper details on failures
+ * 2698 Syntax suggestions errors as warnings
+ * 2704 Add Constraint to test whether actual item is contained in expected collection
+ * 2711 NUnitLite: Add support for --nocolor option
+ * 2714 AnyOfConstraint enumerates multiple times
+ * 2725 Enable 'strict' compilation flag
+ * 2726 Replace the ConcurrentQueue and SpinWait compatibility classes
+ * 2727 Avoid treating warnings as errors inside the IDE
+ * 2734 TestCaseAttribute: ExpectedResult should support same value conversion as normal method arguments
+ * 2742 FailureSite not correctly set on containing suites when tests are ignored.
+ * 2749 Update Travis SDK versions
+
+### NUnit 3.9 - November 10, 2017
+
+This release addresses numerous parallelization issues that were introduced in 3.8
+when method level parallelization was added. Most of the parallelization issues
+resolved were tests never completing when using some combinations of parallel tests
+and `ApartmentState` not being properly applied to tests in all cases.
+
+#### Issues Resolved
+
+ * 893 Inconsistent Tuple behavior.
+ * 1239 NUnit3 sometimes hangs if SetUpFixtures are run in parallel
+ * 1346 NullReferenceException when [TestFixtureSource] refers to data in a generic class.
+ * 1473 Allow Is.Ordered to Compare Null Values
+ * 1899 Constraint Throws.Exception does not catch exception with async lambdas
+ * 1905 SetupFixture without namespace will make assembly-level Parallelizable attribute useless
+ * 2091 When a native exception of corrupted state is thrown, nunit test thread crashes and the nunit-console process hangs
+ * 2102 NUnitLite incorrectly reports Win 10 OS name
+ * 2271 When CollectionAssert.AreEqual do compare each element, it will ignore the IEquatable of the element too
+ * 2289 ResolveTypeNameDifference does not handle generic types well
+ * 2311 Resolve test projects' namespace situation
+ * 2319 Add .editorconfig to set file encodings so that people don't have to think about it
+ * 2364 Parallelizable attribute not invalidating invalid parallel scope combinations
+ * 2372 Create testing for compounded ConstraintFilters
+ * 2388 Parallelization causes test cases to stop respecting fixture's apartment state
+ * 2395 NUnit 3.8+ does not finish running tests
+ * 2398 NUnit CI spurious failures, NUnit.Framework.Internal.ThreadUtilityTests.Kill
+ * 2402 --labels=All doesn't show anything in console output executing NUnitLite Console Runner
+ * 2406 Summary descriptions replaced by more detailed ones
+ * 2411 And constraint on Has.Member throws
+ * 2412 Using fluent syntax unintentionally removed in 3.8
+ * 2418 Support equality comparison delegate
+ * 2422 Has.Property causes AmbiguousMatchException for shadowing properties
+ * 2425 XML doc typo fix
+ * 2426 Regression in 3.8.1: ApartmentAttribute no longer works when applied to an assembly
+ * 2428 Fix NullReferenceExceptions caused by WorkItemQueue not being thread-safe
+ * 2429 Stack trace shown for Assert.Warn
+ * 2438 [Parallelizable] hangs after a few tests
+ * 2441 Allows to override load-time/execution-time interfaces in built-in tests attributes
+ * 2446 CI failure in mono Warning tests
+ * 2448 Inherited Test SetUp, TearDown, etc. are not executed in .NET Core if they are not public
+ * 2451 Compile RegEx to improve performance
+ * 2454 SetUpFixture not respecting NonParallelizable tag on TestFixtures.
+ * 2459 [Parallelizable(ParallelScope.Children)] Unable to finish tests
+ * 2465 Possible wrong properties are returned by reflection in ReflectionExtensions.cs
+ * 2467 Test execution hangs when using [SetUpFixture] with NUnit 3.8.x
+ * 2469 Allow RangeAttribute to be specified multiple times for the same argument
+ * 2471 Parametrized testcases not running in parallel
+ * 2475 Framework incorrectly identifies Win 10 in xml results
+ * 2478 Attributes on SetUpFixture are not applied
+ * 2486 Message when asserting null with Is.EquivalentTo could be more helpful
+ * 2497 Use ConstraintUtils.RequireActual through out the codebase
+ * 2504 Support changing test display name on TestFixtureData
+ * 2508 Correct divergence from shadowed Is / Has members.
+ * 2516 When test writes something to the stdErr there is no guaranteed way to link a test-output event to a target test using ITestEventListener
+ * 2525 Remove unwanted space from comment
+ * 2526 SerializationException in low trust floating point equality test
+ * 2533 Matches<T>(Predicate<T>) throws ArgumentException or Fails when actual is null
+ * 2534 SetUpFixture causes NUnit to lock with Apartment( STA )
+ * 2551 CollectionItemsEqualConstraint is missing Using(Func<T, T, bool>)
+ * 2554 Made TestFixtureData.SetName internal for 3.9
+
+### NUnit 3.8.1 - August 28, 2017
+
+This release fixes two critical regressions in the 3.8 release. The first caused the console
+runner to crash if you are using test parameters. The second issue caused collection
+constraints checking for multiple items in a collection to fail.
+
+#### Issues Resolved
+
+ * 2386 Contains.Item() fails for collections in NUnit 3.8
+ * 2390 Missing value attribute in test parameters setting causes NullReferenceException in console
+
+### NUnit 3.8 - August 27, 2017
+
+This release removes several methods and attributes that were marked obsolete in the
+original 3.0 release. Support for iOS and Android has been improved.
+
+An issue that caused unit tests to run slower was addressed as was a bug that prevented
+the use of Assert.Multiple in async code.
+
+The Order attribute can now also be applied to the class level to set the order
+that test fixtures will be run.
+
+#### Issues Resolved
+
+ * 345  Order of Fixture Execution
+ * 1151 Include differences in output for Is.EquivalentTo
+ * 1324 Remove CollectionContainsConstraint
+ * 1670 Attaching files to the test result
+ * 1674 InRange-Constraint must work with object
+ * 1851 TestCaseSource unable to pass one element byte array
+ * 1996 Timeout does not work if native code is running at the time
+ * 2004 Has.One as synonym for Has.Exactly(1).Items
+ * 2062 TestCaseSource attribute causes test to pass when source is not defined
+ * 2144 Allow option on RandomAttribute to produce distinct values
+ * 2179 Some NUnit project's tests fail on systems with CultureInfo other than en
+ * 2195 Contains.Substring with custom StringComparison
+ * 2196 Expose ParallelizableAttribute (and other attribute) constructor arguments as properties
+ * 2201 Invalid platform name passed to PlatformAttribute should mark test NotRunnable
+ * 2208 StackFIlter trims leading spaces from each line
+ * 2213 SetCultureAttribute: CultureInfo ctor should use default culture settings
+ * 2217 Console runner performance varies wildly depending on environmental characteristics
+ * 2219 Remove Obsolete Attributes
+ * 2225 OneTimeTearDown and Dispose Ordering
+ * 2237 System.Runtime.Loader not available for iOS/Android
+ * 2242 Running tests directly should never surface a NullReferenceException
+ * 2244 Add KeyValuePair<TKey, TValue> to the default formatters
+ * 2251 Randomizer.NextGuid()
+ * 2253 Parallelizable(ParallelScope.Fixtures) doesn't work on a TestFixture
+ * 2254 EqualTo on ValueTuple with Nullable unexpected
+ * 2261 When an assembly is marked with ParallelScope.None and there are Parallelizable tests NUnit hangs
+ * 2269 Parallelizable and NonParallelizable attributes on setup and teardown silently ignored
+ * 2276 Intermittent test failures in Travic CI: TestContextTests
+ * 2281 Add type constraint for Throws and any method requiring Exception
+ * 2288 Killing thread cancels test run
+ * 2292 Is.Ordered.By() with a field throws NullReferenceException
+ * 2298 Write TestParametersDictionary to xml result file in readable format
+ * 2299 NUnitLite NuGet package no longer installs NUnit NuGet package
+ * 2304 Revert accidental doc removal
+ * 2305 Correct misprint ".con" -> ".com"
+ * 2312 Prevent crash on invalid --result parsing in NUnitLite
+ * 2313 Incorrect xmldoc on RetryAttribute
+ * 2332 Update build script to use NUnitConsoleRunner v3.7.0
+ * 2335 Execute OneTimeTearDown as early as possible when running fixtures in parallel
+ * 2342 Remove deprecated Is.String* Constraints
+ * 2348 Can't use Assert.Multiple with async code
+ * 2353 Provide additional Result information through TestContext
+ * 2358 Get framework to build under Mono 5.0
+ * 2360 Obsolete CollectionContainsConstraint Constructors
+ * 2361 NUnit Parallelizable and OneTimeSetUp with no namespace results in single-threaded test execution
+ * 2370 TestCaseAttribute can't convert int to nullable long
+
+### NUnit 3.7.1 - June 6, 2017
+
+This is a hotfix release that addresses occasional hangs when using test parallelization
+and fixes crashes in NCrunch prior to version 3.9.
+
+#### Issues Resolved
+
+ * 2205 Ncrunch: System.Xml.XmlException: Root element is missing, when adding NUnit 3.7.0
+ * 2209 NUnit occasionally hangs when parallelizable TestFixture has OneTimeSetUp and OneTimeTearDown
+
+### NUnit 3.7 - May 29, 2017
+
+This release of NUnit expands on parallel test execution to allow test methods to
+be run in parallel. Please see the [Parallelizable Attribute](https://github.com/nunit/docs/wiki/Parallelizable-Attribute)
+for more information.
+
+NUnit 3.7 also drops the Portable build of the framework and replaces it with a
+.NET Standard 1.3 version to compliment the .NET Standard 1.6 version. This change
+enables several constraints and other features in the .NET Standard builds that
+weren't available in portable like Path and Directory based asserts.
+
+The AssertionHelper class has been deprecated because it is seldom used and has
+not received any of the updates that Asserts and Constraints receive. If your code
+is using the AssertionHelper class, we recommend that you migrate your asserts.
+
+#### Issues Resolved
+
+ * 164 Run test methods within a fixture in parallel
+ * 391 Multiple Assertions
+ * 652 Add ability to execute test actions before SetUp or OneTimeSetUp
+ * 1000 Support multiple Author attributes per test
+ * 1096 Treat OneTimeSetup and OneTimeTearDown as separate work items
+ * 1143 NUnitLite - Explore flag does not apply where filter to output
+ * 1238 Feature request: Print LoaderExceptions when fixture loading fails
+ * 1363 Make Timeouts work without running test on its own thread
+ * 1474 Several SetUpFixtures at the same level may be active at the same time
+ * 1819 TestContext.Progress.Write writes new line
+ * 1830 Add --labels switch changes to nunilite and nunitlite tests
+ * 1859 ConcurrentQueue is duplicate with System.Threading.dll package
+ * 1877 Resolve differences between NUnit Console and NUnitLite implementations of @filename
+ * 1885 Test parameter containing a semicolon
+ * 1896 Test has passed however Reason with an empty message is printed in the xml
+ * 1918 Changing DefaultFloatingPointTolerance breaks tests running in parallel
+ * 1932 NUnit Warn class should be removed from stack trace by filter
+ * 1934 NullReferenceException when null arguments are used in TestFixtureAttribute
+ * 1952 TestContext.Out null when used in task with .NET Core
+ * 1963 Investigate removing SpecialValue
+ * 1965 TestContext does not flow in async method
+ * 1971 Switch CHANGES.txt to Markdown
+ * 1973 Implemented TestExecutionContext to use AsyncLocal<> for NETSTANDARD1_6
+ * 1975 TestFixtureSource doesn't work with a class that has no namespace
+ * 1983 Add missing ConstraintExpression.Contain overload
+ * 1990 Add namespace filter
+ * 1997 Remove unused --verbose and --full command line options
+ * 1999 Author Tests assume ICustomAttributeProvider.GetCustomAttributes return order is defined
+ * 2003 Better user info about ParallelizableAttribute and ParallelScope
+ * 2005 Exclude empty failure messages from results xml
+ * 2007 3.6 Multiple assertion backwards compatibility
+ * 2010 Add DelayedConstraint in NetStandard 1.6 build
+ * 2020 Better message when timeout fails
+ * 2023 Ability to abort threads running a message pump
+ * 2025 NullReferenceException using Is.EqualTo on two unequal strings
+ * 2030 Add method to mark tests as invalid with a reason
+ * 2031 Limit Language level to C#6
+ * 2034 Remove silverlight project - no longer used
+ * 2035 NullReferenceException inside failing Assert.That call
+ * 2040 Cannot catch AssertionException
+ * 2045 NUnitlite-runner crashes if no file is provided
+ * 2050 Creation of TestExecutionContext should be explicit
+ * 2052 NullReferenceException with TestCaseSource if a property has no setter
+ * 2061 TestContext.WorkDirectory not initialized during build process
+ * 2079 Make TestMethod.Arguments public or otherwise accessible (e.g. TestContext)
+ * 2080 Allow comments in @FILE files
+ * 2087 Enhance error message: Test is not runnable in single-threaded context. Timeout
+ * 2092 Convert Portable library to .NET Standard 1.3
+ * 2095 Extend use of tolerance to ComparisonConstraints
+ * 2099 Include type in start-suite/start-test report elements
+ * 2110 NullReferenceException when getting TestDirectory from TestContext
+ * 2115 Mark AssertionHelper as Obsolete
+ * 2121 Chained PropertyConstraint constraints report incorrect ActualValue
+ * 2131 Remove "Version 3" suffix from NUnitLite NuGet Package
+ * 2132 TestFixtureTests.CapturesArgumentsForConstructorWithMultipleArgsSupplied assumes order of custom attributes
+ * 2143 Non-parallel fixture with parallel children runs in parallel with other fixtures
+ * 2147 Test Assembly using NUnitLite & Nunit 3.6.1 hangs under .NET Core when `--timeout` is supplied on command line
+ * 2150 Add portable-slow-tests to Cake file
+ * 2152 Allow attaching files to TestResults
+ * 2154 Fix execution of non-parallel test fixtures
+ * 2157 Getting WorkerId inside Assert.Throws / DoesNotThrow returns null instead of previous non-null value
+ * 2158 Update SetupFixtureAttribute XML Docs
+ * 2159 Prevent crash in .NET standard with log file path
+ * 2165 Trying to install NUnit 3.6.1 on .NET Framework asks for download of 20 more packages
+ * 2169 Incorrect xmldocs for SetUpAttribute
+ * 2170 Cake build fails if only Visual Studio 2017 installed
+ * 2173 Remove PreTestAttribute and PostTestAttribute
+ * 2186 Replace special characters as part of converting branch names to package versions
+ * 2191 System.Reflection.TargetInvocationException with nunit3-console --debug on Mono
+
+### NUnit 3.6.1 - February 26, 2017
 
 This is a hotfix release of the framework that addresses critical issues found in
 the 3.6 release.
 
-Issues Resolved
+#### Issues Resolved
 
  * 1962 A Theory with no data passes
  * 1986 NUnitLite ignores --workers option
@@ -11,14 +591,14 @@ Issues Resolved
  * 2017 Two NUnit project's tests fail on systems with comma decimal mark settings
  * 2043 Regression in 3.6.0 when catching AssertionException
 
-NUnit 3.6 - January 9, 2017
+### NUnit 3.6 - January 9, 2017
 
 This release of the framework no longer includes builds for Compact Framework or
 for SilverLight, but adds a .NET Standard 1.6 build. If anyone still using
 Compact Framework or SilverLight and would like to continue development on those
 versions of the framework, please contact the NUnit team.
 
-Framework
+#### Framework
 
  * .NET Standard 1.6 is now supported
  * Adds support for Multiple Assert blocks
@@ -30,7 +610,7 @@ Framework
  * Added NonTestAssemblyAttribute for use by third-party developers to indicate
    that their assemblies reference the NUnit framework, but do not contain tests
 
-Issues Resolved
+#### Issues Resolved
 
  * 406 Warning-level Assertions
  * 890 Allow file references anywhere in the command line.
@@ -64,7 +644,7 @@ Issues Resolved
  * 1901 Make nunitlite-runner Prefer32Bit option consistent across Debug/Release
  * 1904 Add .NET Standard 1.6 Dependencies to the Nuspec Files
  * 1907 Handle early termination of multiple assert block
- * 1911 Changing misleading comment that implies that every ICollection<T> is a list
+ * 1911 Changing misleading comment that implies that every `ICollection<T>` is a list
  * 1912 Add new warning status and result state
  * 1913 Report Warnings in NUnitLite
  * 1914 Extra AssertionResult entries in TestResults
@@ -80,7 +660,7 @@ Issues Resolved
  * 1960 Typo fixes
  * 1966 Xamarin Runner cannot reference NUnit NuGet Package
 
-NUnit 3.5 - October 3, 2015
+### NUnit 3.5 - October 3, 2016
 
 This is the first version of NUnit where the framework will be released separately from the
 console runner, engine and other extensions. From this point forward, the NUnit Framework will be
@@ -91,16 +671,16 @@ This is also the first release where the NUnit Framework will not be included in
 the console runner, engine and extensions will be available as an MSI installer. We recommend that you
 use the NUnit NuGet packages for the framework, but a ZIP file with the binaries will also be available.
 
-Framework
+#### Framework
 
  * Added Assert.Zero and Assert.NotZero methods
- * You can now pass a Func<string> to Asserts to lazily evaluate exception messages
+ * You can now pass a `Func<string>` to Asserts to lazily evaluate exception messages
  * Added the ability to Assert on the order of multiple properties in a collection
  * Tests with a Timeout will no longer timeout while you are debugging
 
-Issues Resolved
+#### Issues Resolved
 
- * 144 Pass a Func<string> to lazily evaluate an exception message
+ * 144 Pass a `Func<string>` to lazily evaluate an exception message
  * 995 Enable Warning as Error
  * 1106 Move various Assembly Info files under Properties for CF
  * 1334 Add Assert.Zero and Assert.NotZero
@@ -129,45 +709,45 @@ Issues Resolved
  * 1805 Error message "arguments provided for method not taking any" seems incomplete / doesn't make much sense
  * 1815 Prevent NullReferenceException in SubPathConstraint
 
-NUnit 3.4.1 - June 30, 2016
+### NUnit 3.4.1 - June 30, 2016
 
-Console Runner
+#### Console Runner
 
  * A new option, --list-extensions, will display all the engine extensions that
    have been installed by the engine.
 
-Issues Resolved
+#### Issues Resolved
 
  * 1623 NUnit 3.4 is not integrated with TeamCity
  * 1626 NUnit.ConsoleRunner is not picking up NUnit.Extension.NUnitV2ResultWriter
  * 1628 Agent's process stays in memory when it was failed to unload AppDomain
  * 1635 Console option to list loaded extensions
 
-NUnit 3.4 - June 25, 2016
+### NUnit 3.4 - June 25, 2016
 
-Framework
+#### Framework
 
- * Improvements in comparing equality using IEquatable<T>
+ * Improvements in comparing equality using `IEquatable<T>`
  * Test case names will only be truncated if the runner requests it or it is overridden on the command line
    with the --test-name-format option
  * The .NET 2.0 version of the framework now includes LINQ. If your tests target .NET 2.0, you can now use
    LINQ queries in your tests
 
-Engine
+#### Engine
 
  * The TeamCity event listener has been separated out into an engine extension
  * Fixed numerous issues around thread safety of parallel test runs
  * Additional fixes to reduce memory usage
  * Fixes for Mono 4.4
 
-Console Runner
+#### Console Runner
 
  * There is a new --params command line option that allows you to pass parameters to your tests
    which can be retrieved using TestContext.Parameters
  * Another new command line option --loaduserprofile causes the User Profile to be loaded into the
    NUnit Agent process.
 
-Issues Resolved
+#### Issues Resolved
 
  * 329 (CLI) Runner does not report AppDomain unloading timeout
  * 720 Need a way to get test-specific command-line arguments at runtime
@@ -198,7 +778,7 @@ Issues Resolved
  * 1476 Examine need for "synchronous" events in event queue
  * 1481 TestCase with generic return type causes NullReferenceException
  * 1483 Remoting exceptions during test execution
- * 1484 Comparing Equality using IEquatable<T> Should Use Most Specific Method
+ * 1484 Comparing Equality using `IEquatable<T>` Should Use Most Specific Method
  * 1493 NUnit 2 test results report ParameterizedMethod but should be ParameterizedTest
  * 1507 NullReferenceException when null arguments are used in TestFixtureAttribute
  * 1513 Add new teamcity extension to packages
@@ -221,25 +801,25 @@ Issues Resolved
  * 1607 nunit.nuget.addins discovery pattern is wrong then restored through project.json
  * 1617 Load user profile on test runners
 
-NUnit 3.2.1 - April 19, 2016
+### NUnit 3.2.1 - April 19, 2016
 
-Framework
+#### Framework
 
  * The output and error files are now thread safe when running tests in parallel
  * Added a .NET 3.5 build of the framework preventing conflicts with the compatiblity classes in the 2.0 framework
  * Added a SingleThreadedAttribute to be added to a TestFixture to indicate all child tests should run on the same thread
 
-Engine
+#### Engine
 
  * Unless required, run all tests within a fixture on the same thread
  * Added an EventListener extension point
  * Reduced memory usage
 
-Console Runner
+#### Console Runner
 
  * No longer probes for newer versions of the engine, instead uses the engine that is included with the console
 
-Issues Resolved
+#### Issues Resolved
 
  *  332 Add CF to the Appveyor CI build
  *  640 Keep CF Build (and other future builds) in Sync
@@ -261,7 +841,7 @@ Issues Resolved
  * 1352 Tests losing data setup on thread
  * 1359 Compilation error in NUnitPortableDriverTests.cs
  * 1383 Skip Silverlight build if SDK not installed
- * 1386 Bug when using Assert.Equals() with types that explicitly implement IEquatable<T>
+ * 1386 Bug when using Assert.Equals() with types that explicitly implement `IEquatable<T>`
  * 1390 --testlist with file with blank first line causes IndexOutOfRangeException
  * 1399 Fixed NullReference issue introduced by the fix for #681
  * 1405 ITestRunner.StopRun throws exception of type 'System.MissingMethodException'
@@ -269,9 +849,9 @@ Issues Resolved
  * 1410 Make OutFile and ErrFile streamwriters synchronized
  * 1413 Switch console to use a local engine
 
-NUnit 3.2 - March 5, 2016
+### NUnit 3.2 - March 5, 2016
 
-Framework
+#### Framework
 
  * Added an Order attribute that defines the order in which tests are run
  * Added Assert.ThrowsAsync for testing if async methods throw an exception
@@ -280,11 +860,11 @@ Framework
  * TestCaseSourceAttribute now optionally takes an array of parameters that can be passed to the source method
  * Added Is.Zero and Is.Not.Zero to the fluent syntax as a shorter option for Is.EqualTo(0) and Is.Not.EqualTo(0)
 
-Engine
+#### Engine
 
  * Engine extensions can be installed via NuGet packages
 
-Issues Resolved
+#### Issues Resolved
 
  * 170 Test Order Attribute
  * 300 Create an NUnit Visual Studio Template
@@ -331,14 +911,14 @@ Issues Resolved
  * 1297 NUnit.Engine nuget package improvements
  * 1301 Assert.AreNotSame evaluates ToString unnecessarily
 
-NUnit 3.0.1 - December 1, 2015
+### NUnit 3.0.1 - December 1, 2015
 
-Console Runner
+#### Console Runner
 
  * The Nunit.Runners NuGet package was updated to become a meta-package that pulls in the NUnit.Console package
  * Reinstated the --pause command line option that will display a message box allowing you to attach a debugger if the --debug option does not work
 
-Issues Resolved
+#### Issues Resolved
 
  * 994 Add max number of Agents to the NUnit project file
  * 1014 Ensure NUnit API assembly updates with MSI installs
@@ -359,34 +939,34 @@ Issues Resolved
  * 1062 Console.WriteLine statements in "OneTimeSetUp" and "OneTimeTearDown" annotated methods are not directed to the console when using nunit3-console.exe runner
  * 1063 Error in Random Test
 
-NUnit 3.0.0 Final Release - November 15, 2015
+### NUnit 3.0.0 Final Release - November 15, 2015
 
-Issues Resolved
+#### Issues Resolved
 
  * 635 Mono 4.0 Support
 
-NUnit 3.0.0 Release Candidate 3 - November 13, 2015
+### NUnit 3.0.0 Release Candidate 3 - November 13, 2015
 
-Engine
+#### Engine
 
  * The engine now only sets the config file for project.nunit to project.config if project.config exists. Otherwise, each assembly uses its own config, provided it is run in a separate AppDomain by itself.
 
    NOTE: It is not possible for multiple assemblies in the same AppDomain to use different configs. This is not an NUnit limitation, it's just how configs work!
 
-Issues Resolved
+#### Issues Resolved
 
  * 856 Extensions support for third party runners in NUnit 3.0
  * 1003 Delete TeamCityEventHandler as it is not used
  * 1015 Specifying .nunit project and --framework on command line causes crash
  * 1017 Remove Assert.Multiple from framework
 
-NUnit 3.0.0 Release Candidate 2 - November 8, 2015
+### NUnit 3.0.0 Release Candidate 2 - November 8, 2015
 
-Engine
+#### Engine
 
  * The IDriverFactory extensibility interface has been modified.
 
-Issues Resolved
+#### Issues Resolved
 
  * 970  Define PARALLEL in CF build of nunitlite
  * 978  It should be possible to determine version of NUnit using nunit console tool
@@ -399,9 +979,9 @@ Issues Resolved
  * 997  Add missing XML Documentation
  * 1008 NUnitLite namespace not updated in the NuGet Packages
 
-NUnit 3.0.0 Release Candidate - November 1, 2015
+### NUnit 3.0.0 Release Candidate - November 1, 2015
 
-Framework
+#### Framework
 
  * The portable build now supports ASP.NET 5 and the new Core CLR.
 
@@ -411,20 +991,20 @@ Framework
  * `TestCaseAttribute` and `TestCaseData` now allow modifying the test name without replacing it entirely.
  * The Silverlight packages are now separate downloads.
 
-NUnitLite
+#### NUnitLite
 
  * The NUnitLite runner now produces the same output display and XML results as the console runner.
 
-Engine
+#### Engine
 
  * The format of the XML result file has been finalized and documented.
 
-Console Runner
+#### Console Runner
 
  * The console runner program is now called `nunit3-console`.
  * Console runner output has been modified so that the summary comes at the end, to reduce the need for scrolling.
 
-Issues Resolved
+#### Issues Resolved
 
  *  59 Length of generated test names should be limited
  *  68 Customization of test case name generation
@@ -455,32 +1035,32 @@ Issues Resolved
  * 960 Intermittent failure of CategoryFilterTests
  * 967 Run Settings Report is not being displayed.
 
-NUnit 3.0.0 Beta 5 - October 16, 2015
+### NUnit 3.0.0 Beta 5 - October 16, 2015
 
-Framework
+#### Framework
 
  * Parameterized test cases now support nullable arguments.
  * The NUnit framework may now be built for the .NET Core framework. Note that this is only available through building the source code. A binary will be available in the next release.
 
-Engine
+#### Engine
 
  * The engine now runs multiple test assemblies in parallel by default
  * The output XML now includes more information about the test run, including the text of the command used, any engine settings and the filter used to select tests.
  * Extensions may now specify data in an identifying attribute, for use by the engine in deciding whether to load that extension.
 
 
-Console Runner
+#### Console Runner
 
  * The console now displays all settings used by the engine to run tests as well as the filter used to select tests.
  * The console runner accepts a new option --maxagents. If multiple assemblies are run in separate processes, this value may be used to limit the number that are executed simultaneously in parallel.
  * The console runner no longer accepts the --include and --exclude options. Instead, the new --where option provides a more general way to express which tests will be executed, such as --where "cat==Fast && Priority==High". See the docs for details of the syntax.
  * The new --debug option causes NUnit to break in the debugger immediately before tests are run. This simplifies debugging, especially when the test is run in a separate process.
 
-Issues Resolved
+##### Issues Resolved
 
  *  41	Check for zeroes in Assert messages
  * 254	Finalize XML format for test results
- * 275	NUnitEqualityComparer fails to compare IEquatable<T> where second object is derived from T
+ * 275	NUnitEqualityComparer fails to compare `IEquatable<T>` where second object is derived from T
  * 304	Run test Assemblies in parallel
  * 374	New syntax for selecting tests to be run
  * 515	OSPlatform.IsMacOSX doesn't work
@@ -520,20 +1100,20 @@ Issues Resolved
  * 894	Give nunit.engine and nunit.engine.api assemblies strong names
  * 896	NUnit 3.0 console runner not placing test result xml in --work directory
 
-NUnit 3.0.0 Beta 4 - August 25, 2015
+### NUnit 3.0.0 Beta 4 - August 25, 2015
 
-Framework
+#### Framework
 
  * A new RetryAttribute allows retrying of failing tests.
  * New SupersetConstraint and Is.SupersetOf syntax complement SubsetConstraint.
  * Tests skipped due to ExplicitAttribute are now reported as skipped.
 
-Engine
+#### Engine
 
  * We now use Cecil to examine assemblies prior to loading them.
  * Extensions are no longer based on Mono.Addins but use our own extension framework.
 
-Issues Resolved
+#### Issues Resolved
 
  * 125 3rd-party dependencies should be downloaded on demand
  * 283 What should we do when a user extension does something bad?
@@ -558,9 +1138,9 @@ Issues Resolved
  * 780 Teamcity fix
  * 782 No sources for 2.6.4
 
-NUnit 3.0.0 Beta 3 - July 15, 2015
+### NUnit 3.0.0 Beta 3 - July 15, 2015
 
-Framework
+#### Framework
 
  * The RangeAttribute has been extended to support more data types including
    uint, long and ulong
@@ -581,16 +1161,16 @@ Framework
  * Significant improvements have been made in how NUnit deduces the type arguments of
    generic methods based on the arguments provided.
 
-Engine
+#### Engine
 
  * If the target framework is not specified, test assemblies that are compiled
    to target .NET 4.5 will no longer run in .NET 4.0 compatibility mode
 
- Console
+#### Console
 
  * If the console is run without arguments, it will now display help
 
-Issues Resolved
+#### Issues Resolved
 
  *  47 Extensions to RangeAttribute
  * 237 System.Uri .ctor works not properly under Nunit
@@ -610,19 +1190,19 @@ Issues Resolved
  * 683 Make FrameworkController available in portable build
  * 687 TestAgency does not launch agent process correctly if runtime type is not specified (i.e. v4.0)
  * 692 PlatformAttribute_OperatingSystemBitNess fails when running in 32-bit process
- * 693 Generic Test<T> Method cannot determine type arguments for fixture when passed as IEnumerable<T>
+ * 693 Generic `Test<T>` Method cannot determine type arguments for fixture when passed as `IEnumerable<T>`
  * 698 Require TestCaseSource and ValueSource named members to be static
  * 703 TeamCity non-equal flowid for 'testStarted' and 'testFinished' messages
  * 712 Extensions to RandomAttribute
  * 715 Provide a data source attribute at TestFixture Level
  * 718 RangeConstraint gives error with from and two args of differing types
  * 723 Does nunit.nuspec require dependency on Microsoft.Bcl.Async?
- * 724 Adds support for Nullable<bool> to Assert.IsTrue and Assert.IsFalse
+ * 724 Adds support for `Nullable<bool>` to Assert.IsTrue and Assert.IsFalse
  * 734 Console without parameters doesn't show help
 
-NUnit 3.0.0 Beta 2 - May 12, 2015
+### NUnit 3.0.0 Beta 2 - May 12, 2015
 
-Framework
+#### Framework
 
  * The Compact Framework version of the framework is now packaged separately
    and will be distributed as a ZIP file and as a NuGet package.
@@ -636,14 +1216,13 @@ Framework
    have now been made internal. Additional classes will be made internal
    for the final 3.0 release.
 
-Engine
+#### Engine
 
  * Added a core engine which is a non-extensible, minimal engine for use by
    devices and similar situations where reduced functionality is compensated
-   for by reduced size and simplicity of usage. See
-   https://github.com/nunit/dev/wiki/Core-Engine for more information.
+   for by reduced size and simplicity of usage.
 
-Issues Resolved
+#### Issues Resolved
 
  *  22  Add OSArchitecture Attribute to Environment node in result xml
  *  24  Assert on Dictionary Content
@@ -685,13 +1264,13 @@ Issues Resolved
  * 646  ConfigurationManager.AppSettings Params Return Null under Beta 1
  * 648  Passing 2 or more test assemblies targeting > .NET 2.0 to nunit-console fails
 
-NUnit 3.0.0 Beta 1 - March 25, 2015
+### NUnit 3.0.0 Beta 1 - March 25, 2015
 
-General
+#### General
 
  * There is now a master windows installer for the framework, engine and console runner.
 
-Framework
+#### Framework
 
  * We no longer create a separate framework build for .NET 3.5. The 2.0 and
    3.5 builds were essentially the same, so the former should now be used
@@ -706,7 +1285,7 @@ Framework
  * String arguments used in test case names are now truncated to 40 rather
    than 20 characters.
 
-Engine
+#### Engine
 
  * The engine API has now been finalized. It permits specifying a minimum
    version of the engine that a runner is able to use. The best installed
@@ -718,12 +1297,11 @@ Engine
    caused by events not being received and allows selecting V2 tests to
    be run from the command-line, in the same way that V3 tests are selected.
 
-Console
+#### Console
 
- * The console now defaults to not using shadowcopy. There is a new option
-   --shadowcopy to turn it on if needed.
+ * The console now defaults to not using shadowcopy. There is a new option --shadowcopy to turn it on if needed.
 
-Issues Resolved
+#### Issues Resolved
 
  * 224	Silverlight Support
  * 318	TestActionAttribute: Retrieving the TestFixture
@@ -750,20 +1328,20 @@ Issues Resolved
  * 534	Add classname and methodname to test result xml
  * 541	Console help doesn't indicate defaults
 
-NUnit 3.0.0 Alpha 5 - January 30, 2015
+### NUnit 3.0.0 Alpha 5 - January 30, 2015
 
-General
+#### General
 
  * A Windows installer is now included in the release packages.
 
-Framework
+#### Framework
 
  * TestCaseAttribute now allows arguments with default values to be omitted. Additionaly, it accepts a Platform property to specify the platforms on which the test case should be run.
  * TestFixture and TestCase attributes now enforce the requirement that a reason needs to be provided when ignoring a test.
  * SetUp, TearDown, OneTimeSetUp and OneTimeTearDown methods may now be async.
  * String arguments over 20 characters in length are truncated when used as part of a test name.
 
-Engine
+#### Engine
 
  * The engine is now extensible using Mono.Addins. In this release, extension points are provided for FrameworkDrivers, ProjectLoaders and OutputWriters. The following addins are bundled as a part of NUnit:
    * A FrameworkDriver that allows running NUnit V2 tests under NUnit 3.0.
@@ -771,13 +1349,13 @@ Engine
    * An OutputWriter that creates XML output in NUnit V2 format.
  * DomainUsage now defaults to Multiple if not specified by the runner
 
-Console
+#### Console
 
  * New options supported:
-   * --testlist provides a list of tests to run in a file
-   * --stoponerror indicates that the run should terminate when any test fails.
+   * testlist provides a list of tests to run in a file
+   * stoponerror indicates that the run should terminate when any test fails.
 
-Issues Resolved
+#### Issues Resolved
 
  * 20 TestCaseAttribute needs Platform property.
  * 60 NUnit should support async setup, teardown, fixture setup and fixture teardown.
@@ -797,9 +1375,9 @@ Issues Resolved
  * 468  Change default domain usage to multiple.
  * 469  Truncate string arguments in test names in order to limit the length.
 
-NUnit 3.0.0 Alpha 4 - December 30, 2014
+### NUnit 3.0.0 Alpha 4 - December 30, 2014
 
-Framework
+#### Framework
 
  * ApartmentAttribute has been added, replacing STAAttribute and MTAAttribute.
  * Unnecessary overloads of Assert.That and Assume.That have been removed.
@@ -807,7 +1385,7 @@ Framework
  * Improvements to the Pairwise strategy test case generation algorithm.
  * The new NUnitLite runner --testlist option, allows a list of tests to be kept in a file.
 
-Engine
+#### Engine
 
  * A driver is now included, which allows running NUnit 2.x tests under NUnit 3.0.
  * The engine can now load and run tests specified in a number of project formats:
@@ -821,11 +1399,11 @@ Engine
  * Creation of output files like TestResult.xml in various formats is now a
    service of the engine, available to any runner.
 
-Console
+#### Console
 
  * The command-line may now include any number of assemblies and/or supported projects.
 
-Issues Resolved
+#### Issues Resolved
 
  * 37	Multiple SetUpFixtures should be permitted on same namespace
  * 210	TestContext.WriteLine in an AppDomain causes an error
@@ -848,13 +1426,13 @@ Issues Resolved
  * 417	Complete work on NUnit projects
  * 420	Create Settings file in proper location
 
-NUnit 3.0.0 Alpha 3 - November 29, 2014
+### NUnit 3.0.0 Alpha 3 - November 29, 2014
 
-Breaking Changes
+#### Breaking Changes
 
  * NUnitLite tests must reference both the nunit.framework and nunitlite assemblies.
 
-Framework
+#### Framework
 
  * The NUnit and NUnitLite frameworks have now been merged. There is no longer any distinction
    between them in terms of features, although some features are not available on all platforms.
@@ -867,14 +1445,14 @@ Framework
     - TimeoutAttribute
     - FileAssert, DirectoryAssert and file-related constraints
 
-Engine
+#### Engine
 
  * The logic of runtime selection has now changed so that each assembly runs by default
    in a separate process using the runtime for which it was built.
  * On 64-bit systems, each test process is automatically created as 32-bit or 64-bit,
    depending on the platform specified for the test assembly.
 
-Console
+#### Console
 
  * The console runner now runs tests in a separate process per assembly by default. They may
    still be run in process or in a single separate process by use of command-line options.
@@ -884,7 +1462,7 @@ Console
  * A writeability check is performed for each output result file before trying to run the tests.
  * The -teamcity option is now supported.
 
-Issues Resolved
+#### Issues Resolved
 
  * 12   Compact framework should support generic methods
  * 145  NUnit-console fails if test result message contains invalid xml characters
@@ -915,21 +1493,21 @@ Issues Resolved
  * 378  Correct documentation for PairwiseAttribute
  * 386  Console Output Improvements
 
-NUnit 3.0.0 Alpha 2 - November 2, 2014
+### NUnit 3.0.0 Alpha 2 - November 2, 2014
 
-Breaking Changes
+#### Breaking Changes
 
  * The console runner no longer displays test results in the debugger.
  * The NUnitLite compact framework 2.0 build has been removed.
  * All addin support has been removed from the framework. Documentation of NUnit 3.0 extensibility features will be published in time for the beta release. In the interim, please ask for support on the nunit-discuss list.
 
-General
+#### General
 
  * A separate solution has been created for Linux
  * We now have continuous integration builds under both Travis and Appveyor
  * The compact framework 3.5 build is now working and will be supported in future releases.
 
-New Features
+#### New Features
 
  * The console runner now automatically detects 32- versus 64-bit test assemblies.
  * The NUnitLite report output has been standardized to match that of nunit-console.
@@ -939,7 +1517,7 @@ New Features
  * OneTimeSetUp and OneTimeTearDown failures are now shown on the test report. Individual test failures after OneTimeSetUp failure are no longer shown.
  * The console runner refuses to run tests build with older versions of NUnit. A plugin will be available to run older tests in the future.
 
-Issues Resolved
+#### Issues Resolved
 
  * 222	Color console for NUnitLite
  * 229	Timing failures in tests
@@ -964,26 +1542,26 @@ Issues Resolved
  * 319	CI builds are not treating test failures as failures of the build
  * 322	Remove Stopwatch tests where they test the real .NET Stopwatch
 
-NUnit 3.0.0 Alpha 1 - September 22, 2014
+### NUnit 3.0.0 Alpha 1 - September 22, 2014
 
-Breaking Changes
+#### Breaking Changes
 
  * Legacy suites are no longer supported
  * Assert.NullOrEmpty is no longer supported (Use Is.Null.Or.Empty)
 
-General
+#### General
 
  * MsBuild is now used for the build rather than NAnt
  * The framework test harness has been removed now that nunit-console is at a point where it can run the tests.
 
-New Features
+#### New Features
 
  * Action Attributes have been added with the same features as in NUnit 2.6.3.
  * TestContext now has a method that allows writing to the XML output.
  * TestContext.CurrentContext.Result now provides the error message and stack trace during teardown.
  * Does prefix operator supplies several added constraints.
 
-Issues Resolved
+#### Issues Resolved
 
  * 6	Log4net not working with NUnit
  * 13	Standardize commandline options for nunitlite runner
@@ -1011,7 +1589,7 @@ Issues Resolved
  * 215	Running 32-bit tests on a 64-bit OS
  * 219	Teardown failures are not reported
 
-Console Issues Resolved (Old nunit-console project, now combined with nunit)
+#### Console Issues Resolved (Old nunit-console project, now combined with nunit)
 
  * 2	Failure in TestFixtureSetUp is not reported correctly
  * 5	CI Server for nunit-console
@@ -1020,14 +1598,14 @@ Console Issues Resolved (Old nunit-console project, now combined with nunit)
  * 24	'Debug' value for /trace option is deprecated in 2.6.3
  * 38	Confusing Excluded categories output
 
-NUnit 2.9.7 - August 8, 2014
+### NUnit 2.9.7 - August 8, 2014
 
-Breaking Changes
+#### Breaking Changes
 
  * NUnit no longer supports void async test methods. You should use a Task return Type instead.
  * The ExpectedExceptionAttribute is no longer supported. Use Assert.Throws() or Assert.That(..., Throws) instead for a more precise specification of where the exception is expected to be thrown.
 
-New Features
+#### New Features
 
  * Parallel test execution is supported down to the Fixture level. Use ParallelizableAttribute to indicate types that may be run in parallel.
  * Async tests are supported for .NET 4.0 if the user has installed support for them.
@@ -1040,7 +1618,7 @@ New Features
  * You may now specify a tolerance using Within when testing equality of DateTimeOffset values.
  * The XML output now includes a start and end time for each test.
 
-Issues Resolved
+#### Issues Resolved
 
  * 8	[SetUpFixture] is not working as expected
  * 14	CI Server for NUnit Framework
@@ -1077,9 +1655,9 @@ Issues Resolved
 
 NOTE: Bug Fixes below this point refer to the number of the bug in Launchpad.
 
-NUnit 2.9.6 - October 4, 2013
+### NUnit 2.9.6 - October 4, 2013
 
-Main Features
+#### Main Features
 
  * Separate projects for nunit-console and nunit.engine
  * New builds for .NET 4.5 and Silverlight
@@ -1088,7 +1666,7 @@ Main Features
  * Tests may be run in parallel on separate threads
  * Solutions and projects now use VS2012 (except for Compact framework)
 
-Bug Fixes
+#### Bug Fixes
 
  * 463470 	We should encapsulate references to pre-2.0 collections
  * 498690 	Assert.That() doesn't like properties with scoped setters
@@ -1099,10 +1677,10 @@ Bug Fixes
  * 655882 	Make CategoryAttribute inherited
  * 664081 	Add Server2008 R2 and Windows 7 to PlatformAttribute
  * 671432 	Upgrade NAnt to Latest Release
- * 676560 	Assert.AreEqual does not support IEquatable<T>
+ * 676560 	Assert.AreEqual does not support `IEquatable<T>`
  * 691129 	Add Category parameter to TestFixture
  * 697069 	Feature request: dynamic location for TestResult.xml
- * 708173 	NUnit's logic for comparing arrays - use Comparer<T[]> if it is provided
+ * 708173 	NUnit's logic for comparing arrays - use `Comparer<T[]>` if it is provided
  * 709062 	"System.ArgumentException : Cannot compare" when the element is a list
  * 712156 	Tests cannot use AppDomain.SetPrincipalPolicy
  * 719184 	Platformdependency in src/ClientUtilities/util/Services/DomainManager.cs:40
@@ -1110,7 +1688,7 @@ Bug Fixes
  * 735851 	Add detection of 3.0, 3.5 and 4.0 frameworks to PlatformAttribute
  * 736062 	Deadlock when EventListener performs a Trace call + EventPump synchronisation
  * 756843 	Failing assertion does not show non-linear tolerance mode
- * 766749 	net-2.0\nunit-console-x86.exe.config should have a <startup /> element and also enable loadFromRemoteSources
+ * 766749 	net-2.0\nunit-console-x86.exe.config should have a `<startup/>` element and also enable loadFromRemoteSources
  * 770471 	Assert.IsEmpty does not support IEnumerable
  * 785460 	Add Category parameter to TestCaseSourceAttribute
  * 787106 	EqualConstraint provides inadequate failure information for IEnumerables
@@ -1130,7 +1708,7 @@ Bug Fixes
  * 896973 	Console output lines are run together under Linux
  * 897289 	Is.Empty constraint has unclear failure message
  * 898192 	Feature Request: Is.Negative, Is.Positive
- * 898256 	IEnumerable<T> for Datapoints doesn't work
+ * 898256 	`IEnumerable<T>` for Datapoints doesn't work
  * 899178 	Wrong failure message for parameterized tests that expect exceptions
  * 904841 	After exiting for timeout the teardown method is not executed
  * 908829 	TestCase attribute does not play well with variadic test functions
@@ -1148,7 +1726,7 @@ Bug Fixes
  * 1041365 	Add MaxOsX and Xbox support to platform attribute
  * 1057981 	C#5 async tests are not supported
  * 1060631 	Add .NET 4.5 build
- * 1064014 	Simple async tests should not return Task<T>
+ * 1064014 	Simple async tests should not return `Task<T>`
  * 1071164 	Support async methods in usage scenarios of Throws constraints
  * 1071343 	Runner.Load fails on CF if the test assembly contains a generic method
  * 1071861 	Error in Path Constraints
@@ -1163,16 +1741,16 @@ Bug Fixes
  * 1223294 	System.NullReferenceException thrown when ExpectedExceptionAttribute is used in a static class
  * 1225542 	Standardize commandline options for test harness
 
-Bug Fixes in 2.9.6 But Not Listed Here in the Release
+#### Bug Fixes in 2.9.6 But Not Listed Here in the Release
 
  * 541699	Silverlight Support
  * 1222148	/framework switch does not recognize net-4.5
  * 1228979	Theories with all test cases inconclusive are not reported as failures
 
 
-NUnit 2.9.5 - July 30, 2010
+### NUnit 2.9.5 - July 30, 2010
 
-Bug Fixes
+#### Bug Fixes
 
  * 483836 	Allow non-public test fixtures consistently
  * 487878 	Tests in generic class without proper TestFixture attribute should be invalid
@@ -1190,9 +1768,9 @@ Bug Fixes
  * 606548 	Deprecate Directory Assert in 2.5 and remove it in 3.0
  * 608875 	NUnit Equality Comparer incorrectly defines equality for Dictionary objects
 
-NUnit 2.9.4 - May 4, 2010
+### NUnit 2.9.4 - May 4, 2010
 
-Bug Fixes
+#### Bug Fixes
 
  * 419411 	Fixture With No Tests Shows as Non-Runnable
  * 459219 	Changes to thread princpal cause failures under .NET 4.0
@@ -1206,47 +1784,47 @@ Bug Fixes
  * 504018 	Automatic Values For Theory Test Parameters Not Provided For bool And enum
  * 505899 	'Description' parameter in both TestAttribute and TestCaseAttribute is not allowed
  * 523335 	TestFixtureTearDown in static class not executed
- * 556971 	Datapoint(s)Attribute should work on IEnumerable<T> as well as on Arrays
+ * 556971 	Datapoint(s)Attribute should work on `IEnumerable<T>` as well as on Arrays
  * 561436 	SetCulture broken with 2.5.4
  * 563532 	DatapointsAttribute should be allowed on properties and methods
 
-NUnit 2.9.3 - October 26, 2009
+### NUnit 2.9.3 - October 26, 2009
 
-Main Features
+#### Main Features
 
  * Created new API for controlling framework
  * New builds for .Net 3.5 and 4.0, compact framework 3.5
  * Support for old style tests has been removed
  * New adhoc runner for testing the framework
 
-Bug Fixes
+#### Bug Fixes
 
  * 432805 	Some Framework Tests don't run on Linux
  * 440109 	Full Framework does not support "Contains"
 
-NUnit 2.9.2 - September 19, 2009
+### NUnit 2.9.2 - September 19, 2009
 
-Main Features
+#### Main Features
 
  * NUnitLite code is now merged with NUnit
  * Added NUnitLite runner to the framework code
  * Added Compact framework builds
 
-Bug Fixes
+#### Bug Fixes
 
- * 430100 	Assert.Catch<T> should return T
+ * 430100 	`Assert.Catch<T>` should return T
  * 432566 	NUnitLite shows empty string as argument
  * 432573 	Mono test should be at runtime
 
-NUnit 2.9.1 - August 27, 2009
+### NUnit 2.9.1 - August 27, 2009
 
-General
+#### General
 
  * Created a separate project for the framework and framework tests
  * Changed license to MIT / X11
  * Created Windows installer for the framework
 
-Bug Fixes
+#### Bug Fixes
 
  * 400502 	NUnitEqualityComparer.StreamsE­qual fails for same stream
  * 400508 	TestCaseSource attirbute is not working when Type is given
