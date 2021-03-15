@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unit_Tests.TestModels;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     class SerializationTest
     {

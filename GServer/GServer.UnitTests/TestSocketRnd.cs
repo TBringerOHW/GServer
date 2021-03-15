@@ -3,7 +3,7 @@ using System.Net;
 using GServer.Containers;
 using GServer.Messages;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     internal class TestSocketRnd : TestSocket
     {

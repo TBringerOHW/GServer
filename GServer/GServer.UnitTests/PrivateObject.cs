@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     internal class PrivateObject
     {

@@ -1,7 +1,7 @@
 ﻿using GServer.Messages;
 using NUnit.Framework;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     class MessageTest
     {

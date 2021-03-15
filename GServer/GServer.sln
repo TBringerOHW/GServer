@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GServer", "GServer\GServer.csproj", "{7D55B9CF-74F8-4D40-8C5F-9AE0021424D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit-Tests", "Unit-Tests\Unit-Tests.csproj", "{2676952C-E082-413E-97D4-2198323F5B3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GServer.UnitTests", "GServer.UnitTests\GServer.UnitTests.csproj", "{2676952C-E082-413E-97D4-2198323F5B3A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5C614CFE-6C30-4609-B8E1-C16782773578}"
 	ProjectSection(SolutionItems) = preProject

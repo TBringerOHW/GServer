@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using GServer;
 using GServer.Containers;
 using GServer.Messages;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     internal class Datagram
     {

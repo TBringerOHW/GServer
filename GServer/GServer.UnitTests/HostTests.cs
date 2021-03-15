@@ -1,44 +1,55 @@
-﻿using System;
-using GServer;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using GServer.Messages;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     internal class HostTests
     {
         [Test]
         [Timeout(8000)]
-        public void HostConversationAck() {
+        public void HostConversationAck() 
+        {
             var h1 = new Host(8080);
             var h2 = new Host(8081);
             var err = string.Empty;
+            
             h1.DebugLog = s => { };
             h2.DebugLog = s => { };
+            
             var ts1 = new TestSocketRnd();
             var ts2 = new TestSocketRnd();
 
             h1.StartListen(ts1);
             h2.StartListen(ts2);
+            
             Thread.Sleep(1000);
+            
             TestSocket.Join(ts1, ts2);
+            
             var successMessage = false;
             var successAck = false;
+            
             var t1 = new Timer((o) => ServerTimer.Tick());
             t1.Change(100, 100);
+            
             h2.AddHandler((short) MessageType.Ack, (m, e) => { successAck = true; });
             h1.AddHandler(123, (m, e) => { successMessage = true; });
+            
             var connected = false;
             h2.OnConnect = () => { connected = true; };
+            h2.BeginConnect(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 8080));
+            
             while (!connected) {
-                h2.BeginConnect(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 8080));
                 Thread.Sleep(1000);
             }
+            
             h2.Send(new Message(123, Mode.Reliable));
+            
             Thread.Sleep(4000);
+            
             Assert.AreEqual(string.Empty, err);
             Assert.AreEqual(true, successMessage, "Сообщение не пришло");
             Assert.AreEqual(true, successAck, "Ack не пришел");

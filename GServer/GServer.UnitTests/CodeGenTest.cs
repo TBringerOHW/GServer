@@ -5,7 +5,7 @@ using NUnit.Framework;
 // ReSharper disable All
 
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     class SampleIn
     {

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     internal class TestSocketFixed : TestSocket
     {

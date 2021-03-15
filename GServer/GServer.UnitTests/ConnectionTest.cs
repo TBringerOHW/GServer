@@ -1,17 +1,15 @@
-﻿using GServer;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using GServer.Connection;
 using GServer.Messages;
 
-namespace Unit_Tests
+namespace GServer.UnitTests
 {
     internal class ConnectionTest
     {
         [Test]
         public void ReliableAlghoritmTest() {
-            var con = new Connection(null);
+            var con = new Connection.Connection(null);
             var msg = new Message(123, Mode.Reliable);
 
             var rnd = new Random();
