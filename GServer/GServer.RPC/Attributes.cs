@@ -3,40 +3,27 @@ using System.Reflection;
 
 namespace GServer.RPC
 {
-    public enum InvokeType
-    {
-        Client,
-        Server,
-        MultiCast
-    }
+    #region [Invoke]
+
+    
     public class InvokeAttribute: Attribute
     {
-        public InvokeType Type { get; set; }
-
-        public InvokeAttribute()
-        {
-            Type = InvokeType.MultiCast;
-        }
-
-        public InvokeAttribute(InvokeType invokeType)
-        {
-            Type = invokeType;
-        }
     }
 
     public class InvokeHelper
     {
-        public Object classInstance;
-        public MethodInfo method;
-        public InvokeType type;
-        public InvokeHelper(Object instance, MethodInfo methodInfo, InvokeType invokeType)
+        public readonly object ClassInstance;
+        public readonly MethodInfo Method;
+        public InvokeHelper(object instance, MethodInfo methodInfo)
         {
-            classInstance = instance;
-            method = methodInfo;
-            type = invokeType;
+            ClassInstance = instance;
+            Method = methodInfo;
         }
     }
 
+    #endregion
+
+    #region [Sync]
     
     public enum SyncType
     {
@@ -47,17 +34,6 @@ namespace GServer.RPC
 
     public class SyncAttribute : Attribute
     {
-        private SyncType SyncType { get; set; }
-
-        public SyncAttribute()
-        {
-            SyncType = SyncType.Receive;
-        }
-
-        public SyncAttribute(SyncType syncType)
-        {
-            SyncType = syncType;
-        }
     }
 
     public class SyncHelper
@@ -73,4 +49,6 @@ namespace GServer.RPC
             SyncType = syncType;
         }
     }
+
+    #endregion
 }

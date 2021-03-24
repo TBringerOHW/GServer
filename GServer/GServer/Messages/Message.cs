@@ -18,8 +18,9 @@ namespace GServer.Messages
         Ack = 2,
         Token = 3,
         Ping = 4,
-        Resend = 5,
-        SendToEndPoint = 6
+        RPCResend = 5,
+        RPCSendToEndPoint = 6,
+        FieldsPropertiesSync = 7,
     }
 
     /// <summary>
@@ -101,15 +102,15 @@ namespace GServer.Messages
             set { Header.MessageId = value; }
         }
 
-        internal bool Reliable {
+        public bool Reliable {
             get { return Header.Reliable; }
         }
 
-        internal bool Ordered {
+        public bool Ordered {
             get { return Header.Ordered; }
         }
 
-        internal bool Sequenced {
+        public bool Sequenced {
             get { return Header.Sequenced; }
         }
 

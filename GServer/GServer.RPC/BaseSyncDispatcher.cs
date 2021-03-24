@@ -1,17 +1,21 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using GServer.Messages;
-
-
+[assembly: InternalsVisibleTo("GServer.UnitTests")]
 namespace GServer.RPC
 {
     public class BaseSyncDispatcher
+#if UNITY_ENGINE
+        : MonoBehaviour
+#endif
     {
         private static BaseSyncDispatcher _instance;
         private static volatile bool _queued = false;
         protected static readonly List<HandlerAction> Backlog = new List<HandlerAction>();
 
         protected static List<HandlerAction> Actions = new List<HandlerAction>();
+        
 #if UNITY_ENGINE
         private static Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
 #endif
@@ -41,10 +45,10 @@ namespace GServer.RPC
                 _queued = true;
             }
         }
-        
-#region [Platform Depended Code]        
-#if UNITY_ENGINE
 
+        #region [Platform Depended Code]
+
+#if UNITY_ENGINE
         private static Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -84,29 +88,43 @@ namespace GServer.RPC
                 NetworkViewCoroutines.Remove(hash);
             }
         }
-        
+
 #else
-        private static Timer _timer;
-        
+        private static Dictionary<NetworkView, Timer> _timers = new Dictionary<NetworkView, Timer>();
+
+        private static bool TimerIsValid(NetworkView networkView)
+        {
+            return _timers.ContainsKey(networkView) && _timers[networkView] != null;
+        }
+
         internal static void StartSync(NetworkView networkView)
         {
             var syncPeriod = (int) networkView.GetSyncPeriod();
-            _timer = new Timer(o=> SyncAction(networkView));
-            _timer.Change(20,syncPeriod);
+
+            if (TimerIsValid(networkView))
+            {
+                StopSync(networkView);
+            }
+
+            var timer = new Timer(o => SyncAction(networkView));
+            timer.Change(20, syncPeriod);
+            _timers.Add(networkView, timer);
         }
 
-        internal static void StopSync(NetworkView networkView)
+        public static void StopSync(NetworkView networkView) //Param required for unity dispatcher version.
         {
-            _timer.Dispose();
-            _timer = null;
+            if (!TimerIsValid(networkView)) return;
+            
+            _timers[networkView].Dispose();
+            _timers.Remove(networkView);
         }
-        
+
         private static void SyncAction(NetworkView networkView)
         {
-                networkView.SyncNow();
+            //networkView.SyncNow();
         }
 #endif
-#endregion
-        
+
+        #endregion
     }
 }

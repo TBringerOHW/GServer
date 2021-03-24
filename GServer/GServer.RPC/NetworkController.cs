@@ -9,32 +9,32 @@ namespace GServer.RPC
 {
     public class NetworkController
     {
-        private static NetworkController instance;
+        private static NetworkController _instance;
 
         public static NetworkController Instance
         {
             get
             {
-                if (instance == null)
-                    instance = new NetworkController();
-                return instance;
+                if (_instance == null)
+                    _instance = new NetworkController();
+                return _instance;
             }
         }
 
-        private Host host;
+        private Host _host;
 
-        internal Dictionary<string, NetworkView> invokes = new Dictionary<string, NetworkView>();
+        private readonly Dictionary<string, NetworkView> _invokes = new Dictionary<string, NetworkView>();
 
         public Action<Exception> OnException
         {
-            get => host.OnException;
-            set => host.OnException += value;
+            get => _host.OnException;
+            set => _host.OnException += value;
         }
 
         public Action OnConnect
         {
-            get => host.OnConnect;
-            set => host.OnConnect += value;
+            get => _host.OnConnect;
+            set => _host.OnConnect += value;
         }
 
         public Action<string> OnMessage { get; set; }
@@ -57,18 +57,17 @@ namespace GServer.RPC
 
         internal static List<NetworkView> GetNetViews()
         {
-            return Instance.invokes.Values.ToList();
+            return Instance._invokes.Values.ToList();
         }
 
         internal void RegisterInvoke(string method, NetworkView networkView)
         {
-            invokes.Add(method, networkView);
+            _invokes.Add(method, networkView);
         }
 
         internal void RPCMessage(string method, DataStorage ds)
         {
-            NetworkView networkView;
-            if (invokes.TryGetValue(method, out networkView))
+            if (_invokes.TryGetValue(method, out var networkView))
             {
                 networkView.RPC(method, ds);
             }
@@ -83,7 +82,7 @@ namespace GServer.RPC
                     port = NetworkExtensions.FreeTcpPort();
                 }
 
-                host = newHost;
+                _host = newHost;
                 ListeningPort = port;
                 
                 Timer timer = new Timer(o => newHost.Tick());
@@ -109,14 +108,14 @@ namespace GServer.RPC
 
                 ListeningPort = port;
 
-                host = new Host(ListeningPort);
+                _host = new Host(ListeningPort);
 
-                host.StartListen();
+                _host.StartListen();
 
-                host.OnException += OnException;
-                host.OnConnect += OnConnect;
+                _host.OnException += OnException;
+                _host.OnConnect += OnConnect;
 
-                Timer timer = new Timer(o => host.Tick());
+                Timer timer = new Timer(o => _host.Tick());
                 timer.Change(0, period);
             }
             catch (Exception e)
@@ -135,33 +134,33 @@ namespace GServer.RPC
                 throw new ArgumentException("The value can't be >= 0 && <= 40");
             }
 
-            host.AddHandler(type, action);
+            _host.AddHandler(type, action);
         }
 
         public void SendMessage(Connection.Connection connection, DataStorage dataStorage, short messageType, Mode mode = Mode.None)
         {
-            host.Send(new Message(messageType, mode, dataStorage), connection);
+            _host.Send(new Message(messageType, mode, dataStorage), connection);
         }
 
         public void SendMessage(Message message)
         {
-            host.Send(message);
+            _host.Send(message);
         }
 
         public void SendMessage(DataStorage dataStorage, short messageType, Mode mode = Mode.None)
         {
-            host.Send(new Message(messageType, mode, dataStorage));
+            _host.Send(new Message(messageType, mode, dataStorage));
         }
 
         public IEnumerable<Connection.Connection> GetConnections()
         {
-            return host.GetConnections();
+            return _host.GetConnections();
         }
 
         public void Dispose()
         {
-            host.Dispose();
-            foreach (var item in host.GetConnections())
+            _host.Dispose();
+            foreach (var item in _host.GetConnections())
             {
                 item.Disconnect();
             }
@@ -177,7 +176,7 @@ namespace GServer.RPC
             try
             {
                 var ipEndPoint = NetworkExtensions.CreateIPEndPoint(string.Concat(ip, ":", port.ToString()));
-                return host.BeginConnect(ipEndPoint);
+                return _host.BeginConnect(ipEndPoint);
             }
             catch (FormatException e)
             {
@@ -186,9 +185,9 @@ namespace GServer.RPC
             }
         }
 
-        public void ForseSendAllMessages()
+        public void ForceSendAllMessages()
         {
-            host.Tick();
+            _host.Tick();
         }
     }
 }

@@ -1,12 +1,5 @@
-﻿// ReSharper disable UnusedMember.Global
-// ReSharper disable ArrangeTypeMemberModifiers
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedMember.Local
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using GServer.Containers;
 
 namespace GServer.Containers
 {
