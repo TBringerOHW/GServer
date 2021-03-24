@@ -7,21 +7,7 @@ namespace GServer.RPC
     {
         public RPCHost(int port) : base(port)
         {
-            AddHandler((short) MessageType.RPCResend, (m, c) =>
-            {
-                var mode = (m.Ordered ? Mode.Ordered : Mode.None) & (m.Reliable ? Mode.Reliable : Mode.None) & (m.Sequenced ? Mode.Sequenced : Mode.None);
-                var message = new Message((short) MessageType.RPCSendToEndPoint, mode, m.Body);
-
-                var connections = GetConnections();
-
-                foreach (var connection in connections)
-                {
-                    if (c != connection)
-                        Send(message, connection);
-                }
-                
-                HandleRPCMessage(m, c);
-            });
+            AddHandler((short) MessageType.RPCResend, HandleMulticast);
 
             AddHandler((short) MessageType.RPCSendToEndPoint, HandleRPCMessage);
             
@@ -31,7 +17,23 @@ namespace GServer.RPC
             });
         }
 
-        private static void HandleRPCMessage(Message m, Connection.Connection c)
+        protected virtual void HandleMulticast(Message m, Connection.Connection c)
+        {
+            var mode = (m.Ordered ? Mode.Ordered : Mode.None) & (m.Reliable ? Mode.Reliable : Mode.None) & (m.Sequenced ? Mode.Sequenced : Mode.None);
+            var message = new Message((short) MessageType.RPCSendToEndPoint, mode, m.Body);
+
+            var connections = GetConnections();
+
+            foreach (var connection in connections)
+            {
+                if (c != connection)
+                    Send(message, connection);
+            }
+
+            HandleRPCMessage(m, c);
+        }
+
+        protected virtual void HandleRPCMessage(Message m, Connection.Connection c)
         {
             var ds = DataStorage.CreateForRead(m.Body);
             var methodName = ds.ReadString();
