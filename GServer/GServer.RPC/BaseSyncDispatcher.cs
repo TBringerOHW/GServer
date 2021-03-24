@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using GServer.Messages;
-
+[assembly: InternalsVisibleTo("GServer.UnitTests")]
 namespace GServer.RPC
 {
     public class BaseSyncDispatcher
@@ -89,30 +90,38 @@ namespace GServer.RPC
         }
 
 #else
-        private static Timer _timer;
+        private static Dictionary<NetworkView, Timer> _timers = new Dictionary<NetworkView, Timer>();
+
+        private static bool TimerIsValid(NetworkView networkView)
+        {
+            return _timers.ContainsKey(networkView) && _timers[networkView] != null;
+        }
 
         internal static void StartSync(NetworkView networkView)
         {
             var syncPeriod = (int) networkView.GetSyncPeriod();
 
-            if (_timer != null)
+            if (TimerIsValid(networkView))
             {
                 StopSync(networkView);
             }
 
-            _timer = new Timer(o => SyncAction(networkView));
-            _timer.Change(20, syncPeriod);
+            var timer = new Timer(o => SyncAction(networkView));
+            timer.Change(20, syncPeriod);
+            _timers.Add(networkView, timer);
         }
 
-        internal static void StopSync(NetworkView networkView) //Param required for unity dispatcher version.
+        public static void StopSync(NetworkView networkView) //Param required for unity dispatcher version.
         {
-            _timer.Dispose();
-            _timer = null;
+            if (!TimerIsValid(networkView)) return;
+            
+            _timers[networkView].Dispose();
+            _timers.Remove(networkView);
         }
 
         private static void SyncAction(NetworkView networkView)
         {
-            networkView.SyncNow();
+            //networkView.SyncNow();
         }
 #endif
 

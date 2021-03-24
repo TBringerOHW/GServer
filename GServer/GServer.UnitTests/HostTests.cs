@@ -257,7 +257,8 @@ namespace GServer.UnitTests
         [Test]
         public void OrderedIfPacketsLost()
         {
-            var sendMessagesAmount = 300;
+            var sendMessagesAmount = 500;
+            var messageSendWaitTime = 21 * sendMessagesAmount;
             
             ActionDispatcher.Start(1);
             var server = new Host(8080);
@@ -281,12 +282,13 @@ namespace GServer.UnitTests
             
             var t1 = new Timer((o) => ServerTimer.Tick());
             t1.Change(10, 10);
-            Thread.Sleep(1000);
+            Thread.Sleep(20);
             TestSocket.Join(ts1, ts2);
             
+            client.BeginConnect(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 8080));
+            
             while (!connected) {
-                client.BeginConnect(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 8080));
-                Thread.Sleep(1000);
+                Thread.Sleep(20);
             }
             
             for (var i = 0; i < sendMessagesAmount; i++) {
@@ -295,7 +297,8 @@ namespace GServer.UnitTests
                 });
             }
             
-            Thread.Sleep(5000);
+            Thread.Sleep(messageSendWaitTime);
+            
             Assert.AreEqual(sendMessagesAmount, messageCount);
             foreach (var connection in client.GetConnections()) {
                 Assert.AreEqual(0, connection.BufferCount, "client buffer not empty");

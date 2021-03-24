@@ -1,22 +1,70 @@
-﻿using System;
-using System.Net;
-using System.Threading;
+﻿using System.Threading;
 using GServer.RPC;
 using NUnit.Framework;
+using static GServer.UnitTests.RPCTestCommon;
 
+
+namespace MyNamespace
+{
+    public class BaseClass
+    {
+        [Invoke]
+        public void ATestMethod()
+        {
+                
+        }
+    }
+}
 namespace GServer.UnitTests
 {
+    /// <summary>
+    /// !!!Attention!!!
+    /// # Execution of this tests require use of another machine.
+    /// !!!Attention!!!
+    /// </summary>
     public class RPCTest
     {
-        [Test]
-        public void RPCFieldSyncTest()
+        public class BaseClass
         {
-            Init(out var server, out var client, out var networkView, out var clientNetworkView);
+            [Invoke]
+            public void ATestMethod()
+            {
+                
+            }
+        }
+
+        public class ExtensionClass : BaseClass
+        {
+            [Invoke]
+            public void BTestMethod()
+            {
+                
+            }
+        }
+
+        public class AnotherBaseClass
+        {
+            [Invoke]
+            public void BTestMethod()
+            {
+                
+            }
+        }
+        
+        [Test]
+        public void FieldSyncTest()
+        {
+        }
+        
+        [Test]
+        public void PropertySyncTest()
+        {
+            Init(out var server, out var client, out _, out _, true);
+            server.SyncProperty += 10;
             
-            client.SyncField += 10;
             Thread.Sleep(5000);
 
-            Assert.AreEqual(client.SyncField, server.SyncField);
+            Assert.AreEqual(client.SyncProperty, server.SyncProperty);
         }
         
         #region [Methods]
@@ -29,7 +77,10 @@ namespace GServer.UnitTests
             var bufferValue = client.SyncField;
             clientNetworkView.Call(client, "RPCClientTest");
             
-            Assert.Less(bufferValue, client.SyncField);
+            Thread.Sleep(5000);
+            
+            Assert.AreEqual(bufferValue + BaseSyncEntity.ClientSyncTestChangeAmount, client.SyncField);
+            Assert.Pass($"[{bufferValue}] + [{BaseSyncEntity.ClientSyncTestChangeAmount}] = [{client.SyncField}]");
         }
         
         [Test]
@@ -40,101 +91,34 @@ namespace GServer.UnitTests
             var bufferValue = server.SyncField;
             serverNetworkView.Call(server, "RPCServerTest");
             
-            Assert.Less(bufferValue, server.SyncField);
+            Thread.Sleep(5000);
+
+            Assert.AreEqual(bufferValue + BaseSyncEntity.ServerSyncTestChangeAmount, server.SyncField);
+            Assert.Pass($"[{bufferValue}] + [{BaseSyncEntity.ServerSyncTestChangeAmount}] = [{server.SyncField}]");
         }
         
         [Test]
         public void RPCMulticastSyncTest()
         {
             Init(out var server, out var client, out var serverNetworkView, out var clientNetworkView);
-
-            var bufferValue = client.SyncField;
             
-            clientNetworkView.Call(client, "RPCMultiCastTest");// RPCMultiCastTest old RPCMultiCastTest
+            var bufferValue = server.SyncField;
             
-            Thread.Sleep(5000);
+            serverNetworkView.Call(server, "RPCMultiCastTest");
 
-            Assert.Less(bufferValue, client.SyncField);
-            Assert.AreEqual(client.SyncField, server.SyncField);
+            var clientRPCCallInvoked = false;
+            client.FieldChanged += () => clientRPCCallInvoked = true;
+            while (!clientRPCCallInvoked)
+            {
+                Thread.Sleep(500);
+            }
+
+            Assert.AreNotEqual(bufferValue, server.SyncField, "Server value not changed!");
+            Assert.AreEqual(client.SyncField, server.SyncField, $"[{client.SyncField}] Client value != Server value!");
+            Assert.Pass($"Client value = [{client.SyncField}], Server value = [{server.SyncField}], Value before test = [{bufferValue}], Excepted change = [{BaseSyncEntity.MulticastSyncTestChangeAmount}]");
         }
 
         #endregion
-
-        #region [Common]
-
-        private class BaseSyncEntity
-        {
-            [Sync] public int SyncField = 0;
-            public Guid Guid;
-
-            public BaseSyncEntity()
-            {
-                Guid = Guid.NewGuid();
-            }
-
-            [Invoke(InvokeType.Client)]
-            public void RPCClientTest()
-            {
-                SyncField += 1;
-            }
-        
-            [Invoke(InvokeType.Server)]
-            public void RPCServerTest()
-            {
-                SyncField += 2;
-            }
-        
-            [Invoke(InvokeType.MultiCast)]
-            public void RPCMultiCastTest()
-            {
-                SyncField += 3;
-            }
-        }
-
-        private static void Init(out BaseSyncEntity serverSyncEntity, out BaseSyncEntity clientSyncEntity, out NetworkView serverNetworkView, out NetworkView clientNetworkView)
-        {
-            const int serverPort = 25565;
-            const int clientPort = 25575;
-            
-            var server = new RPCHost(serverPort);
-            var serverConnected = false;
-            server.StartListen();
-
-            var client = new RPCHost(clientPort);
-            var clientConnected = false;
-            client.StartListen();
-
-            var timer = new Timer(state =>
-            {
-                server.Tick();
-                client.Tick();
-            });
-            timer.Change(10, 100);
-            
-            server.OnConnect = () => { serverConnected = true; };
-            client.OnConnect = () => { clientConnected = true; };
-            
-            server.BeginConnect(new IPEndPoint(IPAddress.Loopback, clientPort));
-            client.BeginConnect(new IPEndPoint(IPAddress.Loopback, serverPort));
-
-            while (!serverConnected || !clientConnected)
-            {
-                Thread.Sleep(100);
-            }
-            
-            NetworkController.Instance.Init(server, serverPort);
-            
-            serverNetworkView = new NetworkView(0.5f);
-            serverSyncEntity = new BaseSyncEntity();
-            serverNetworkView.InitInvoke(serverSyncEntity);
-
-            clientNetworkView = new NetworkView(0.5f);
-            clientSyncEntity = new BaseSyncEntity();
-            clientNetworkView.InitInvoke(clientSyncEntity);
-        }
-
-        #endregion
-        
     }
     
 

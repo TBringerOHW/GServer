@@ -38,11 +38,11 @@ namespace GServer.RPC
 
             if (!(obj is IMarshallable))
             {
-                NetworkController.ShowException(new Exception("argument " + objName + " not implement IMarshalable"));
+                NetworkController.ShowException(new Exception("argument " + objName + " not implement IMarshallable"));
                 return null;
             }
 
-            if (type.GetMethod("GetHashCode").DeclaringType != type)
+            if (type.GetMethod("GetHashCode")?.DeclaringType != type)
             {
                 NetworkController.ShowException(new Exception("argument " + objName + " not override GetHashCode"));
                 return null;
@@ -81,7 +81,7 @@ namespace GServer.RPC
 
                 if (!(obj is IMarshallable))
                 {
-                    NetworkController.ShowException(new Exception("argument " + objName + " not implement IMarshalable"));
+                    NetworkController.ShowException(new Exception("argument " + objName + " not implement IMarshallable"));
                     return null;
                 }
 
@@ -115,8 +115,8 @@ namespace GServer.RPC
         {
             return type.IsPrimitive 
                 || type.IsEnum
-                || type.Equals(typeof(string))
-                || type.Equals(typeof(decimal));
+                || type == typeof(string)
+                || type == typeof(decimal);
         }
 
     }

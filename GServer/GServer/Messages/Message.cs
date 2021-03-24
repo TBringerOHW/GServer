@@ -18,8 +18,9 @@ namespace GServer.Messages
         Ack = 2,
         Token = 3,
         Ping = 4,
-        Resend = 5,
-        SendToEndPoint = 6
+        RPCResend = 5,
+        RPCSendToEndPoint = 6,
+        FieldsPropertiesSync = 7,
     }
 
     /// <summary>

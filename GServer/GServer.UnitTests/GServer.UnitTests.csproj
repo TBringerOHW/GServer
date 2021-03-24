@@ -59,6 +59,7 @@
     <Compile Include="PrivateObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RPCTest.cs" />
+    <Compile Include="RPCTestCommon.cs" />
     <Compile Include="SerializationTest.cs" />
     <Compile Include="TestModels\s.cs" />
     <Compile Include="TestSocket.cs" />

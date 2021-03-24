@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Unity" />
+        <InternalsVisibleTo Include="GServer.UnitTests" /> <!-- [assembly: InternalsVisibleTo("GServer.UnitTests")] -->
     </ItemGroup>
 
 </Project>

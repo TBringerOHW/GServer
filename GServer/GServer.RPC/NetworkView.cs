@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading;
 using GServer.Containers;
 using GServer.Messages;
 
@@ -16,7 +14,6 @@ namespace GServer.RPC
 
         private static int _countOfViews;
         private float _syncPeriod;
-        private Thread _syncRPCThread;
 
         private readonly NetworkController _netCon = NetworkController.Instance;
 
@@ -39,6 +36,20 @@ namespace GServer.RPC
             _hash = ++_countOfViews;
         }
 
+        public void InitRPCOnly(params object[] classes)
+        {
+            var invokeSystemType = new InvokeAttribute().GetType();
+
+            foreach (var targetClass in classes)
+            {
+                if (!targetClass.GetType().IsClass) continue;
+
+                CountClasses(targetClass);
+
+                FindInvokableMethods(targetClass, invokeSystemType);
+            }
+        }
+
         public void InitInvoke(params object[] classes)
         {
             var invokeSystemType = new InvokeAttribute().GetType();
@@ -47,96 +58,116 @@ namespace GServer.RPC
             {
                 if (!targetClass.GetType().IsClass) continue;
 
-                var key = targetClass.ToString();
-                if (_countOfClasses.TryGetValue(key, out var num))
-                {
-                    num += 1;
-                    _countOfClasses.Remove(key);
-                }
-                else
-                {
-                    num = 1;
-                }
+                CountClasses(targetClass);
 
-                _countOfClasses.Add(key, num);
-                _hashToNum.Add(targetClass.GetHashCode(), num);
-                _stringToObject.Add(GetUniqueClassString(targetClass), targetClass);
-
-                var miInfos = ReflectionHelper.GetMethodsWithAttribute(targetClass.GetType(), invokeSystemType);
-                foreach (var member in miInfos)
-                {
-                    InvokeAttribute invokeAttribute = null;
-
-                    var customAttributes = member.GetCustomAttributes(typeof(InvokeAttribute), false);
-                    if (customAttributes.Length > 0)
-                    {
-                        invokeAttribute = (InvokeAttribute) customAttributes[0];
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                    
-                    var methodName = GetUniqueClassString(targetClass) + "." + member.Name;
-
-                    NetworkController.ShowMessage("Register method " + member + " as " + methodName + " with invokeType " + invokeAttribute.Type);
-                    Console.WriteLine("Register method " + member + " as " + methodName + " with invokeType " + invokeAttribute.Type);
-
-                    _methods.Add(methodName, new InvokeHelper(targetClass, member, invokeAttribute.Type));
-                    _netCon.RegisterInvoke(methodName, this);
-                    var res = ReflectionHelper.GetMethodParamsObjects(member);
-
-                    foreach (var param in res)
-                    {
-                        if (_methodsArguments.ContainsKey(param.Key)) continue;
-                        _methodsArguments.Add(param.Key, param.Value);
-                        NetworkController.ShowMessage($"Register non-basic type {param.Value.GetType()}");
-                        Console.WriteLine($"Register non-basic type {param.Value.GetType()}");
-                    }
-                }
-
-                var fieldInfos = ReflectionHelper.GetFieldsWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
-                var propertyMap = new Dictionary<string, InfoHelper>();
-                Console.WriteLine(fieldInfos);
-                foreach (var fieldInfo in fieldInfos)
-                {
-                    Console.WriteLine("Register field " + fieldInfo.Name);
-                    NetworkController.ShowMessage("Register field " + fieldInfo.Name);
-                    var propName = fieldInfo.Name;
-                    propertyMap.Add(propName, new InfoHelper(fieldInfo));
-                    var nonBasicObj = ReflectionHelper.CheckNonBasicType(fieldInfo.FieldType);
-                    if (nonBasicObj != null)
-                    {
-                        if (!_methodsArguments.ContainsKey(nonBasicObj.ToString()))
-                        {
-                            _methodsArguments.Add(nonBasicObj.ToString(), nonBasicObj as IMarshallable);
-                        }
-                    }
-                }
-
-                var propInfos = ReflectionHelper.GetPropertiesWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
-                Console.WriteLine(propInfos);
-                foreach (var propInfo in propInfos)
-                {
-                    Console.WriteLine("Register property " + propInfo.Name);
-                    NetworkController.ShowMessage("Register property " + propInfo.Name);
-                    var propName = propInfo.Name;
-                    propertyMap.Add(propName, new InfoHelper(propInfo));
-                    var nonBasicObj = ReflectionHelper.CheckNonBasicType(propInfo.PropertyType);
-                    if (nonBasicObj != null)
-                    {
-                        if (!_methodsArguments.ContainsKey(nonBasicObj.ToString()))
-                        {
-                            _methodsArguments.Add(nonBasicObj.ToString(), nonBasicObj as IMarshallable);
-                        }
-                    }
-                }
-
-                _properties.Add(GetUniqueClassString(targetClass), propertyMap);
-                _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
+                FindInvokableMethods(targetClass, invokeSystemType);
+                FindSyncFields(targetClass);
+                FindSyncProperties(targetClass);
             }
 
             BaseSyncDispatcher.StartSync(this);
+        }
+
+        private void FindSyncProperties(object targetClass)
+        {
+            var propInfos = ReflectionHelper.GetPropertiesWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
+            var propertyMap = new Dictionary<string, InfoHelper>();
+            Console.WriteLine(propInfos);
+            foreach (var propInfo in propInfos)
+            {
+                Console.WriteLine("Register property " + propInfo.Name);
+                NetworkController.ShowMessage("Register property " + propInfo.Name);
+                _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
+                var propName = propInfo.Name;
+                propertyMap.Add(propName, new InfoHelper(propInfo));
+                var nonBasicObj = ReflectionHelper.CheckNonBasicType(propInfo.PropertyType);
+                if (nonBasicObj != null)
+                {
+                    if (!_methodsArguments.ContainsKey(nonBasicObj.ToString()))
+                    {
+                        _methodsArguments.Add(nonBasicObj.ToString(), nonBasicObj as IMarshallable);
+                    }
+                }
+            }
+
+            _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+        }
+
+        private void FindSyncFields(object targetClass)
+        {
+            var fieldInfos = ReflectionHelper.GetFieldsWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
+            var propertyMap = new Dictionary<string, InfoHelper>();
+            Console.WriteLine(fieldInfos);
+            foreach (var fieldInfo in fieldInfos)
+            {
+                Console.WriteLine("Register field " + fieldInfo.Name);
+                NetworkController.ShowMessage("Register field " + fieldInfo.Name);
+                
+                var propName = fieldInfo.Name;
+                propertyMap.Add(propName, new InfoHelper(fieldInfo));
+                _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
+                var nonBasicObj = ReflectionHelper.CheckNonBasicType(fieldInfo.FieldType);
+                if (nonBasicObj != null)
+                {
+                    if (!_methodsArguments.ContainsKey(nonBasicObj.ToString()))
+                    {
+                        _methodsArguments.Add(nonBasicObj.ToString(), nonBasicObj as IMarshallable);
+                    }
+                }
+            }
+
+            _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+        }
+
+        private void FindInvokableMethods(object targetClass, Type invokeSystemType)
+        {
+            var miInfos = ReflectionHelper.GetMethodsWithAttribute(targetClass.GetType(), invokeSystemType);
+            foreach (var member in miInfos)
+            {
+                var customAttributes = member.GetCustomAttributes(typeof(InvokeAttribute), false);
+                if (customAttributes.Length > 0)
+                {
+                }
+                else
+                {
+                    continue;
+                }
+
+                var methodName = GetUniqueClassString(targetClass) + "." + member.Name;
+
+                NetworkController.ShowMessage("Register method " + member + " as " + methodName);
+                Console.WriteLine("Register method " + member + " as " + methodName);
+
+                _methods.Add(methodName, new InvokeHelper(targetClass, member));
+                _netCon.RegisterInvoke(methodName, this);
+                var res = ReflectionHelper.GetMethodParamsObjects(member);
+
+                foreach (var param in res)
+                {
+                    if (_methodsArguments.ContainsKey(param.Key)) continue;
+                    _methodsArguments.Add(param.Key, param.Value);
+                    NetworkController.ShowMessage($"Register non-basic type {param.Value.GetType()}");
+                    Console.WriteLine($"Register non-basic type {param.Value.GetType()}");
+                }
+            }
+        }
+
+        private void CountClasses(object targetClass)
+        {
+            var key = targetClass.ToString();
+            if (_countOfClasses.TryGetValue(key, out var num))
+            {
+                num += 1;
+                _countOfClasses.Remove(key);
+            }
+            else
+            {
+                num = 1;
+            }
+
+            _countOfClasses.Add(key, num);
+            _hashToNum.Add(targetClass.GetHashCode(), num);
+            _stringToObject.Add(GetUniqueClassString(targetClass), targetClass);
         }
 
         internal float GetSyncPeriod()
@@ -165,10 +196,10 @@ namespace GServer.RPC
                 return null;
             }
 
-            return $"[NetworkView_#{_hash}].{c}#{num}";//_hash + "_" + c + "#" + num;
+            return $"{_hash}{c}#{num}";//_hash + "_" + c + "#" + num;
         }
 
-        internal IMarshallable GetArgument(string name)
+        private IMarshallable GetArgument(string name)
         {
             return _methodsArguments.TryGetValue(name, out var arg) ? arg : null;
         }
@@ -177,8 +208,7 @@ namespace GServer.RPC
         {
             foreach (var one in _properties)
             {
-                object c;
-                if (!_stringToObject.TryGetValue(one.Key, out c))
+                if (!_stringToObject.TryGetValue(one.Key, out var c))
                 {
                     continue;
                 }
@@ -206,7 +236,8 @@ namespace GServer.RPC
                     PushBasicType(field.Value, ds);
                 }
 
-                NetworkController.Instance.SendMessage(ds, (short) MessageType.Resend);
+                NetworkController.Instance.SendMessage(ds, (short) MessageType.FieldsPropertiesSync);
+                //NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCResend);
             }
         }
 
@@ -215,11 +246,10 @@ namespace GServer.RPC
             return SyncMethodPrefix + GetUniqueClassString(c);
         }
 
-        internal Dictionary<string, object> GetClassFields(object c)
+        private Dictionary<string, object> GetClassFields(object c)
         {
             var result = new Dictionary<string, object>();
-            Dictionary<string, InfoHelper> props;
-            if (_properties.TryGetValue(GetUniqueClassString(c), out props))
+            if (_properties.TryGetValue(GetUniqueClassString(c), out var props))
             {
                 foreach (var prop in props)
                 {
@@ -272,13 +302,7 @@ namespace GServer.RPC
 
         private InvokeHelper GetHelper(string method)
         {
-            InvokeHelper arg;
-            if (_methods.TryGetValue(method, out arg))
-            {
-                return arg;
-            }
-
-            return null;
+            return _methods.TryGetValue(method, out var arg) ? arg : null;
         }
 
         public void Call(object c, string method, params object[] args)
@@ -288,48 +312,49 @@ namespace GServer.RPC
             
             if (helper == null) return;
             
-            var client = false;
-            var server = false;
-            switch (helper.type)
-            {
-                case InvokeType.Client:
-                    client = true;
-                    break;
-                case InvokeType.Server:
-                    server = true;
-                    break;
-                case InvokeType.MultiCast:
-                    client = true;
-                    server = true;
-                    break;
-            }
-
-            if (client) ClientCall(helper, args);
+            ServerCall(method, args);
             
-            if (server)
+            /* Obsolete
+             
+             switch (helper.type)
             {
-                var ds = DataStorage.CreateForWrite();
-                ds.Push(method);
-                foreach (var obj in args)
-                {
-                    if (IsValidBasicType(obj.GetType()))
-                    {
-                        PushBasicType(obj, ds);
-                        continue;
-                    }
-                    else
-                    {
-                        PushCustomType(obj as IMarshallable, ds);
-                    }
-                }
+                case InvokeType.Local:
+                    ClientCall(helper, args);
+                    break;
+                case InvokeType.Remote:
+                    ServerCall(method, args);
+                    break;
+                case InvokeType.MultiCast: 
+                    ClientCall(helper, args);
+                    ServerCall(method, args);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }*/
+        }
 
-                NetworkController.Instance.SendMessage(ds, (short) MessageType.Resend);
+        private void ServerCall(string method, object[] args)
+        {
+            var ds = DataStorage.CreateForWrite();
+            ds.Push(method);
+            foreach (var obj in args)
+            {
+                if (IsValidBasicType(obj.GetType()))
+                {
+                    PushBasicType(obj, ds);
+                }
+                else
+                {
+                    PushCustomType(obj as IMarshallable, ds);
+                }
             }
+
+            NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCResend);
         }
 
         private void ClientCall(InvokeHelper helper, params object[] args)
         {
-            helper.method.Invoke(helper.classInstance, args);
+            helper.Method.Invoke(helper.ClassInstance, args);
         }
 
         internal void RPC(string method, DataStorage request)
@@ -349,13 +374,11 @@ namespace GServer.RPC
 
         private void SyncRPC(string method, DataStorage ds)
         {
-            var split = method.Split(new string[] {SyncMethodPrefix}, 2, StringSplitOptions.None);
+            var split = method.Split(new[] {SyncMethodPrefix}, 2, StringSplitOptions.None);
             if (split.Length != 2) return;
             var strObj = split[1];
-            object c;
-            if (!_stringToObject.TryGetValue(strObj, out c)) return;
-            Dictionary<string, InfoHelper> props;
-            if (!_properties.TryGetValue(strObj, out props))
+            if (!_stringToObject.TryGetValue(strObj, out var c)) return;
+            if (!_properties.TryGetValue(strObj, out var props))
             {
                 return;
             }
@@ -363,15 +386,14 @@ namespace GServer.RPC
             while (!ds.Empty)
             {
                 var field = ds.ReadString();
-                InfoHelper info;
-                if (!props.TryGetValue(field, out info))
+                if (!props.TryGetValue(field, out var info))
                 {
                     continue;
                 }
 
                 var type = info.Type.FullName;
                 var dsType = ds.ReadString();
-                if (type != dsType) type = dsType;
+                if (type != null && !type.Equals(dsType)) type = dsType;
                 var value = ParseObject(type, ds);
                 if (value == null)
                 {
@@ -391,10 +413,15 @@ namespace GServer.RPC
                     _cache.Add(cacheKey, value.GetHashCode());
                     info.Set(c, value);
                 }
-                else if (!_cache[cacheKey].Equals(value.GetHashCode()))
+                else
                 {
-                    _cache[cacheKey] = value.GetHashCode();
-                    info.Set(c, value);
+                    var cachedHash = _cache[cacheKey];
+                    var valueHash = value.GetHashCode();
+                    if (!cachedHash.Equals(valueHash))
+                    {
+                        _cache[cacheKey] = value.GetHashCode();
+                        info.Set(c, value);
+                    }
                 }
             }
         }
@@ -449,14 +476,14 @@ namespace GServer.RPC
 
         private void PushCustomType(IMarshallable obj, DataStorage ds)
         {
-            var imObj = obj as IMarshallable;
+            var imObj = obj;
             if (imObj == null)
                 NetworkController.ShowException(new Exception("invalid rpc parameter"));
 
             ds.Push(obj.GetType().FullName, imObj);
         }
 
-        private bool PushBasicType(object obj, DataStorage ds)
+        private void PushBasicType(object obj, DataStorage ds)
         {
             try
             {
@@ -465,10 +492,7 @@ namespace GServer.RPC
             catch (Exception e)
             {
                 NetworkController.ShowException(e);
-                return false;
             }
-
-            return true;
         }
 
         internal static bool IsValidBasicType(Type type)
@@ -519,9 +543,9 @@ namespace GServer.RPC
 
     internal class InfoHelper
     {
-        internal Func<object, object> Get;
-        internal Action<object, object> Set;
-        internal Type Type;
+        internal readonly Func<object, object> Get;
+        internal readonly Action<object, object> Set;
+        internal readonly Type Type;
         internal string Name;
 
         internal InfoHelper(PropertyInfo prop)
