@@ -85,7 +85,7 @@ namespace GServer.RPC
                 _host = newHost;
                 ListeningPort = port;
                 
-                Timer timer = new Timer(o => newHost.Tick());
+                var timer = new Timer(o => newHost.Tick());
                 timer.Change(0, period);
             }
             catch (Exception e)

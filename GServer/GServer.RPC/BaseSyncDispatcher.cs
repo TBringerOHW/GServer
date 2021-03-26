@@ -90,38 +90,35 @@ namespace GServer.RPC
         }
 
 #else
-        private static Dictionary<NetworkView, Timer> _timers = new Dictionary<NetworkView, Timer>();
+        private static readonly Dictionary<NetworkView, Timer> Timers = new Dictionary<NetworkView, Timer>();
 
         private static bool TimerIsValid(NetworkView networkView)
         {
-            return _timers.ContainsKey(networkView) && _timers[networkView] != null;
+            return Timers.ContainsKey(networkView) && Timers[networkView] != null;
         }
 
         internal static void StartSync(NetworkView networkView)
         {
-            var syncPeriod = (int) networkView.GetSyncPeriod();
+            if (TimerIsValid(networkView)) return;
 
-            if (TimerIsValid(networkView))
-            {
-                StopSync(networkView);
-            }
+            var syncPeriod = (int) networkView.GetSyncPeriod();
 
             var timer = new Timer(o => SyncAction(networkView));
             timer.Change(20, syncPeriod);
-            _timers.Add(networkView, timer);
+            Timers.Add(networkView, timer);
         }
 
         public static void StopSync(NetworkView networkView) //Param required for unity dispatcher version.
         {
             if (!TimerIsValid(networkView)) return;
             
-            _timers[networkView].Dispose();
-            _timers.Remove(networkView);
+            Timers[networkView].Dispose();
+            Timers.Remove(networkView);
         }
 
         private static void SyncAction(NetworkView networkView)
         {
-            //networkView.SyncNow();
+            networkView.SyncNow();
         }
 #endif
 
