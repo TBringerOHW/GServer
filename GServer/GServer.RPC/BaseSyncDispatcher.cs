@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using GServer.Messages;
+#if UNITY_ENGINE
+using UnityEngine;
+#else
+using System.Threading;
+#endif
+
 [assembly: InternalsVisibleTo("GServer.UnitTests")]
 namespace GServer.RPC
 {
@@ -15,10 +21,6 @@ namespace GServer.RPC
         protected static readonly List<HandlerAction> Backlog = new List<HandlerAction>();
 
         protected static List<HandlerAction> Actions = new List<HandlerAction>();
-        
-#if UNITY_ENGINE
-        private static Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
-#endif
 
         public static bool IsInitialized
         {
@@ -49,43 +51,43 @@ namespace GServer.RPC
         #region [Platform Depended Code]
 
 #if UNITY_ENGINE
-        private static Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
+        private static Dictionary<int, Coroutine> _networkViewCoroutines = new Dictionary<int, Coroutine>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
         {
             if (_instance == null)
             {
-                _instance = new GameObject("Dispatcher").AddComponent<Dispatcher>();
+                _instance = new GameObject("Dispatcher").AddComponent<BaseSyncDispatcher>();
                 DontDestroyOnLoad(_instance.gameObject);
             }
         }
 
-        private IEnumerator SyncCoroutine(NetworkView NetworkView)
+        private IEnumerator SyncCoroutine(NetworkView networkView)
         {
-            var yieldInstruction = new WaitForSeconds(NetworkView.GetSyncPeriod());
+            var yieldInstruction = new WaitForSeconds(networkView.GetSyncPeriod());
             while (true)
             {
-                NetworkView.SyncNow();
+                networkView.SyncNow();
                 yield return yieldInstruction;
             }
         }
 
-        internal static void StartSync(NetworkView NetworkView)
+        internal static void StartSync(NetworkView networkView)
         {
-            var coroutine = _instance.StartCoroutine(_instance.SyncCoroutine(NetworkView));
-            NetworkViewCoroutines.Add(NetworkView.GetHashCode(), coroutine);
+            var coroutine = _instance.StartCoroutine(_instance.SyncCoroutine(networkView));
+            _networkViewCoroutines.Add(networkView.GetHashCode(), coroutine);
         }
 
-        internal static void StopSync(NetworkView NetworkView)
+        internal static void StopSync(NetworkView networkView)
         {
-            var hash = NetworkView.GetHashCode();
+            var hash = networkView.GetHashCode();
 
-            if (NetworkViewCoroutines.ContainsKey(hash))
+            if (_networkViewCoroutines.ContainsKey(hash))
             {
-                var coroutine = NetworkViewCoroutines[hash];
+                var coroutine = _networkViewCoroutines[hash];
                 _instance.StopCoroutine(coroutine);
-                NetworkViewCoroutines.Remove(hash);
+                _networkViewCoroutines.Remove(hash);
             }
         }
 
