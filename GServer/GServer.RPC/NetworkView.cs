@@ -36,23 +36,38 @@ namespace GServer.RPC
             _hash = ++_countOfViews;
         }
 
-        public void InitRPCOnly(params object[] classes)
+        public void StartSyncProcess()
         {
-            var invokeSystemType = new InvokeAttribute().GetType();
+            BaseSyncDispatcher.StartSync(this);
+        }
 
+        public void InitInvokeRPCOnly(params object[] classes)
+        {
             foreach (var targetClass in classes)
             {
                 if (!targetClass.GetType().IsClass) continue;
 
                 CountClasses(targetClass);
 
-                FindInvokableMethods(targetClass, invokeSystemType);
+                FindInvokableMethods(targetClass, typeof(InvokeAttribute));
+            }
+        }
+
+        public void InitInvokeSyncOnly(params object[] classes)
+        {
+            foreach (var targetClass in classes)
+            {
+                if (!targetClass.GetType().IsClass) continue;
+
+                CountClasses(targetClass);
+
+                FindSyncFields(targetClass);
+                FindSyncProperties(targetClass);
             }
         }
 
         public void InitInvoke(params object[] classes)
         {
-            var invokeSystemType = new InvokeAttribute().GetType();
 
             foreach (var targetClass in classes)
             {
@@ -60,12 +75,10 @@ namespace GServer.RPC
 
                 CountClasses(targetClass);
 
-                FindInvokableMethods(targetClass, invokeSystemType);
+                FindInvokableMethods(targetClass, typeof(InvokeAttribute));
                 FindSyncFields(targetClass);
                 FindSyncProperties(targetClass);
             }
-
-            BaseSyncDispatcher.StartSync(this);
         }
 
         private void FindSyncProperties(object targetClass)
@@ -141,6 +154,8 @@ namespace GServer.RPC
                 _methods.Add(methodName, new InvokeHelper(targetClass, member));
                 _netCon.RegisterInvoke(methodName, this);
                 var res = ReflectionHelper.GetMethodParamsObjects(member);
+
+                if (res == null || res.Count <= 0) continue;
 
                 foreach (var param in res)
                 {
