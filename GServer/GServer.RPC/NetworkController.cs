@@ -85,6 +85,8 @@ namespace GServer.RPC
                 _host = newHost;
                 ListeningPort = port;
                 
+                _host.StartListen();
+                
                 var timer = new Timer(o => newHost.Tick());
                 timer.Change(0, period);
             }
