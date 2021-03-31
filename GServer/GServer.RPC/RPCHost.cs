@@ -30,7 +30,7 @@ namespace GServer.RPC
                     Send(message, connection);
             }
 
-            HandleRPCMessage(m, c);
+            //HandleRPCMessage(m, c);
         }
 
         protected virtual void HandleRPCMessage(Message m, Connection.Connection c)
