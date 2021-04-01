@@ -398,9 +398,11 @@ namespace GServer.Containers
             if (Writer == null)
                 throw new Exception("DataStorage in read only mode");
 
-            string typ = obj.GetType().FullName;
-            Writer.Write(typ);
-            switch (typ)
+            var objectType = obj.GetType();
+            var typeName = objectType.IsEnum ? objectType.GetEnumUnderlyingType().FullName : objectType.FullName;
+            
+            Writer.Write(typeName);
+            switch (typeName)
             {
                 case "System.Int32":
                     Writer.Write(int.Parse(obj.ToString()));

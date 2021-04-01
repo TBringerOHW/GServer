@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using GServer.Containers;
@@ -367,7 +368,7 @@ namespace GServer.RPC
                 }
             }
 
-            NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCResend);
+            NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCSendToEndPoint);
         }
 
         private void ClientCall(InvokeHelper helper, params object[] args)
@@ -547,27 +548,22 @@ namespace GServer.RPC
 
         internal static bool IsValidBasicType(Type type)
         {
-            var typ = type.FullName;
+            var typ = type.IsEnum ? type.GetEnumUnderlyingType().FullName: type.FullName;
             switch (typ)
             {
-                case "System.Int32":
-                    return true;
                 case "System.Byte":
-                    return true;
+                case "System.SByte":
                 case "System.Boolean":
-                    return true;
                 case "System.Char":
-                    return true;
                 case "System.Decimal":
-                    return true;
                 case "System.Double":
-                    return true;
                 case "System.Single":
-                    return true;
-                case "System.Int64":
-                    return true;
                 case "System.Int16":
-                    return true;
+                case "System.UInt16":
+                case "System.Int32":
+                case "System.UInt32":
+                case "System.Int64":
+                case "System.UInt64":
                 case "System.String":
                     return true;
             }
