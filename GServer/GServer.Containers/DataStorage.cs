@@ -402,7 +402,41 @@ namespace GServer.Containers
             var typeName = objectType.IsEnum ? objectType.GetEnumUnderlyingType().FullName : objectType.FullName;
             
             Writer.Write(typeName);
+            
             switch (typeName)
+            {
+                case "System.Int32":
+                    Writer.Write((int)obj);
+                    break;
+                case "System.Byte":
+                    Writer.Write((byte)obj);
+                    break;
+                case "System.Boolean":
+                    Writer.Write((bool)obj);
+                    break;
+                case "System.Char":
+                    Writer.Write((char)obj);
+                    break;
+                case "System.Decimal":
+                    Writer.Write((decimal)obj);
+                    break;
+                case "System.Double":
+                    Writer.Write((double)obj);
+                    break;
+                case "System.Single":
+                    Writer.Write((float)obj);
+                    break;
+                case "System.Int64":
+                    Writer.Write((long)obj);
+                    break;
+                case "System.Int16":
+                    Writer.Write((short)obj);
+                    break;
+                case "System.String":
+                    Writer.Write(obj.ToString());
+                    break;
+            }
+            /*switch (typeName)
             {
                 case "System.Int32":
                     Writer.Write(int.Parse(obj.ToString()));
@@ -434,7 +468,7 @@ namespace GServer.Containers
                 case "System.String":
                     Writer.Write(obj.ToString());
                     break;
-            }
+            }*/
             return this;
         } 
         #endregion
