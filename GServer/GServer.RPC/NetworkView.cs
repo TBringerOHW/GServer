@@ -478,13 +478,7 @@ namespace GServer.RPC
                 return ParseCustomType(marshallable, ds);
             }
 
-            var basicObject = ParseBasicType(key, ds);
-            if (basicObject != null)
-            {
-                return basicObject;
-            }
-            
-            return ParseMarshallable(key, ds);
+            return ParseBasicType(key, ds);
         }
 
         private object ParseMarshallable(string typeName, DataStorage ds)
@@ -536,7 +530,7 @@ namespace GServer.RPC
             if (imObj == null)
                 NetworkController.ShowException(new Exception("invalid rpc parameter"));
 
-            ds.Push(obj.GetType().FullName, imObj);
+            ds.Push(obj.GetType().FullName, imObj);//TODO: Changed FullName to Name
         }
 
         private void PushBasicType(object obj, DataStorage ds)

@@ -62,7 +62,7 @@ namespace GServer.RPC
                 var constructor = par.ParameterType.GetConstructor(
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, 
                     null, Type.EmptyTypes, null);
-                if (constructor == null)
+                if (constructor == null && !par.ParameterType.IsValueType)
                 {
                     NetworkController.ShowException(new Exception("method's parameter " + par.ParameterType.FullName + " should have a parameterless constructor"));
                     return null;
@@ -75,9 +75,7 @@ namespace GServer.RPC
 
 
                 var obj = Activator.CreateInstance(par.ParameterType);
-                string objName = obj.ToString();
-
-
+                var objName = par.ParameterType.FullName;
 
                 if (!(obj is IMarshallable))
                 {
