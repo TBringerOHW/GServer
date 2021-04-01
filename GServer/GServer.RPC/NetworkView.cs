@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
@@ -210,8 +211,10 @@ namespace GServer.RPC
                 NetworkController.ShowException(new Exception("object not invoked"));
                 return null;
             }
+            
+            var uniqStr = $"{_hash}{c.GetType().Name}#{num}";
 
-            return $"{_hash}{c}#{num}";//_hash + "_" + c + "#" + num;
+            return uniqStr;//_hash + "_" + c + "#" + num;
         }
 
         private IMarshallable GetArgument(string name)
@@ -469,13 +472,51 @@ namespace GServer.RPC
 
         private object ParseObject(string key, DataStorage ds)
         {
-            var obj = GetArgument(key);
-            if (obj != null)
+            var marshallable = GetArgument(key);
+            if (marshallable != null)
             {
-                return ParseCustomType(obj, ds);
+                return ParseCustomType(marshallable, ds);
             }
 
-            return ParseBasicType(key, ds);
+            var basicObject = ParseBasicType(key, ds);
+            if (basicObject != null)
+            {
+                return basicObject;
+            }
+            
+            return ParseMarshallable(key, ds);
+        }
+
+        private object ParseMarshallable(string typeName, DataStorage ds)
+        {
+            var types = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p =>  typeof(IMarshallable).IsAssignableFrom(p));
+
+            var typesMatchingName = new List<Type>();
+
+            foreach (var type in types)
+            {
+                if (type.FullName != null && type.FullName.EndsWith(typeName.Split('.').Last()))
+                {
+                    typesMatchingName.Add(type);
+                }
+            }
+
+            if (typesMatchingName.Count == 1)
+            {
+                var obj = (IMarshallable)Activator.CreateInstance(typesMatchingName[0]);
+                obj.ReadFromDs(ds);
+                return obj;
+            }
+
+            if (typesMatchingName.Count == 0) return null;
+            {
+                Console.WriteLine("[Error] RPC Params error! Found two similar type names. Picking first type...");
+                var obj = (IMarshallable)Activator.CreateInstance(typesMatchingName[0]);
+                obj.ReadFromDs(ds);
+                return obj;
+            }
         }
 
         private object ParseCustomType(IMarshallable obj, DataStorage ds)
