@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
@@ -410,7 +409,7 @@ namespace GServer.RPC
                     continue;
                 }
 
-                var type = info.Type.FullName;
+                var type = info.Type.GetFullName();
                 var dsType = ds.ReadString();
                 if (type != null && !type.Equals(dsType)) type = dsType;
                 var value = ParseObject(type, ds);
@@ -482,38 +481,6 @@ namespace GServer.RPC
             return ParseBasicType(key, ds);
         }
 
-        private object ParseMarshallable(string typeName, DataStorage ds)
-        {
-            var types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p =>  typeof(IMarshallable).IsAssignableFrom(p));
-
-            var typesMatchingName = new List<Type>();
-
-            foreach (var type in types)
-            {
-                if (type.FullName != null && type.FullName.EndsWith(typeName.Split('.').Last()))
-                {
-                    typesMatchingName.Add(type);
-                }
-            }
-
-            if (typesMatchingName.Count == 1)
-            {
-                var obj = (IMarshallable)Activator.CreateInstance(typesMatchingName[0]);
-                obj.ReadFromDs(ds);
-                return obj;
-            }
-
-            if (typesMatchingName.Count == 0) return null;
-            {
-                Console.WriteLine("[Error] RPC Params error! Found two similar type names. Picking first type...");
-                var obj = (IMarshallable)Activator.CreateInstance(typesMatchingName[0]);
-                obj.ReadFromDs(ds);
-                return obj;
-            }
-        }
-
         private object ParseCustomType(IMarshallable obj, DataStorage ds)
         {
             obj.ReadFromDs(ds);
@@ -531,14 +498,14 @@ namespace GServer.RPC
             if (imObj == null)
                 NetworkController.ShowException(new Exception("invalid rpc parameter"));
 
-            ds.Push(obj.GetType().FullName, imObj);//TODO: Changed FullName to Name
+            ds.Push(obj.GetType().GetFullName(), imObj);
         }
 
         private void PushBasicType(object obj, DataStorage ds)
         {
             try
             {
-                ds.Push(obj);
+                ds.Push(obj.GetType().GetFullName(), obj);
             }
             catch (Exception e)
             {
@@ -548,8 +515,8 @@ namespace GServer.RPC
 
         internal static bool IsValidBasicType(Type type)
         {
-            var typ = type.IsEnum ? type.GetEnumUnderlyingType().FullName: type.FullName;
-            switch (typ)
+            var basicTypeName = type.GetBasicTypeName();
+            switch (basicTypeName)
             {
                 case "System.Byte":
                 case "System.SByte":

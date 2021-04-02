@@ -10,7 +10,7 @@ namespace GServer.RPC
         public void PushToDs(DataStorage ds)
         {
             ds.Push(Count);
-            ds.Push(GetType().GenericTypeArguments.Single().FullName);
+            ds.Push(GetType().GenericTypeArguments.Single().GetFullName());
             foreach (var marshallable in this)
             {
                 marshallable.PushToDs(ds);
@@ -47,8 +47,8 @@ namespace GServer.RPC
         {
             ds.Push(Count);
             var dictArguments = GetType().GenericTypeArguments;
-            ds.Push(dictArguments[0].FullName);
-            ds.Push(dictArguments[1].FullName);
+            ds.Push(dictArguments[0].GetFullName());
+            ds.Push(dictArguments[1].GetFullName());
         }
 
         public virtual void ReadFromDs(DataStorage ds)
@@ -85,7 +85,7 @@ namespace GServer.RPC
             base.PushToDs(ds);
             foreach (var keyValuePair in this)
             {
-                ds.Push(keyValuePair.Key);
+                ds.Push(keyValuePair.Key.GetType().GetFullName(), keyValuePair.Key);
                 keyValuePair.Value.PushToDs(ds);
             }
         }
@@ -116,7 +116,7 @@ namespace GServer.RPC
             foreach (var keyValuePair in this)
             {
                 keyValuePair.Key.PushToDs(ds);
-                ds.Push(keyValuePair.Value);
+                ds.Push(keyValuePair.Value.GetType().GetFullName(), keyValuePair.Value);
             }
         }
 

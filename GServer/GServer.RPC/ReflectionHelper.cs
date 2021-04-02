@@ -20,13 +20,13 @@ namespace GServer.RPC
             {
                 if (FormatterServices.GetUninitializedObject(type) == null)
                 {
-                    NetworkController.ShowException(new Exception("method's parameter " + type.FullName + " should have a parameterless constructor"));
+                    NetworkController.ShowException(new Exception("method's parameter " + type.GetFullName() + " should have a parameterless constructor"));
                     return null;
                 }
             }
-            if (type.FullName == "System.Object[]")
+            if (type.GetFullName() == "System.Object[]")
             {
-                NetworkController.ShowException(new Exception("invalid parameter type " + type.FullName));
+                NetworkController.ShowException(new Exception("invalid parameter type " + type.GetFullName()));
                 return null;
             }
 
@@ -64,18 +64,18 @@ namespace GServer.RPC
                     null, Type.EmptyTypes, null);
                 if (constructor == null && !par.ParameterType.IsValueType)
                 {
-                    NetworkController.ShowException(new Exception("method's parameter " + par.ParameterType.FullName + " should have a parameterless constructor"));
+                    NetworkController.ShowException(new Exception("method's parameter " + par.ParameterType.GetFullName() + " should have a parameterless constructor"));
                     return null;
                 }
-                if (par.ParameterType.FullName == "System.Object[]")
+                if (par.ParameterType.GetFullName() == "System.Object[]")
                 {
-                    NetworkController.ShowException(new Exception("invalid parameter type " + par.ParameterType.FullName));
+                    NetworkController.ShowException(new Exception("invalid parameter type " + par.ParameterType.GetFullName()));
                     return null;
                 }
 
 
                 var obj = Activator.CreateInstance(par.ParameterType);
-                var objName = par.ParameterType.FullName;
+                var objName = par.ParameterType.GetFullName();
 
                 if (!(obj is IMarshallable))
                 {
@@ -115,6 +115,26 @@ namespace GServer.RPC
                 || type.IsEnum
                 || type == typeof(string)
                 || type == typeof(decimal);
+        }
+
+        /// <summary>
+        /// Return <see cref="Type"/> full name.
+        /// </summary>
+        /// <param name="type">Some <see cref="Type"/>.</param>
+        /// <returns>Returning same value as <see cref="Type"/>.FullName but without square brackets and assembly info.</returns>
+        public static string GetFullName(this Type type)
+        {
+            var fullName = type.FullName;
+            fullName = fullName?.Split(',')[0];
+            return fullName.Replace("[", "");
+        }
+
+        /// <summary>
+        /// Returns basic type FullName. Unlike regular <see cref="Type"/> FullName perform <see cref="Enum"/> basic type check. (Ex. For <see cref="Enum"/> ESomeEnum : <see cref="byte"/> this method will return name of byte, not enum name.)
+        /// </summary>
+        public static string GetBasicTypeName(this Type type)
+        {
+            return type.IsEnum ? type.GetEnumUnderlyingType().GetFullName() : type.GetFullName();
         }
 
     }

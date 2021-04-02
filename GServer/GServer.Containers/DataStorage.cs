@@ -390,21 +390,16 @@ namespace GServer.Containers
                 case "System.String":
                     obj = ReadString();
                     break;
-                default:
-                    break;
             }
 
             return obj;
         }
 
-        public DataStorage Push(object obj)
+        public DataStorage Push(string typeName, object obj)
         {
             if (Writer == null)
                 throw new Exception("DataStorage in read only mode");
 
-            var objectType = obj.GetType();
-            var typeName = objectType.IsEnum ? objectType.GetEnumUnderlyingType().FullName : objectType.FullName;
-            
             Writer.Write(typeName);
             
             switch (typeName)
