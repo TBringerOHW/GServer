@@ -95,16 +95,17 @@ namespace GServer.RPC
             base.ReadFromDs(ds);
             CustomReadFromDs(ds, (keyType, valueType) =>
             {
-                var kvp = (KeyValuePair<TKey,TMarshallableValue>)GetCollectionElementInstance();
-                kvp = new KeyValuePair<TKey, TMarshallableValue>((TKey) ds.ReadObject(ds.ReadString()), kvp.Value);
-                kvp.Value.ReadFromDs(ds);
-                Add(kvp.Key, kvp.Value);
+                var objects = (object[])GetCollectionElementInstance();
+                var key = (TKey) ds.ReadObject(ds.ReadString());
+                var value = (TMarshallableValue) objects[1];
+                value.ReadFromDs(ds);
+                Add(key, value);
             });
         }
 
         public override object GetCollectionElementInstance()
         {
-            return new KeyValuePair<TKey,TMarshallableValue>(Activator.CreateInstance<TKey>(), Activator.CreateInstance<TMarshallableValue>());
+            return new object[] {default, Activator.CreateInstance<TMarshallableValue>()};
         }
     }
 
@@ -125,17 +126,17 @@ namespace GServer.RPC
             base.ReadFromDs(ds);
             CustomReadFromDs(ds, (keyType, valueType) =>
             {
-                var kvp = (KeyValuePair<TMarshallableKey,TValue>)GetCollectionElementInstance();
-                kvp.Key.ReadFromDs(ds);
-                kvp = new KeyValuePair<TMarshallableKey, TValue>(kvp.Key, (TValue) ds.ReadObject(ds.ReadString()));
-                Add(kvp.Key, kvp.Value);
+                var objects = (object[])GetCollectionElementInstance();
+                var key = (TMarshallableKey) objects[0];
+                key.ReadFromDs(ds);
+                var value = (TValue) ds.ReadObject(ds.ReadString());
+                Add(key, value);
             });
         }
         
         public override object GetCollectionElementInstance()
         {
-            return new KeyValuePair<TMarshallableKey,TValue>(Activator.CreateInstance<TMarshallableKey>(),
-                Activator.CreateInstance<TValue>());
+            return new object[] {Activator.CreateInstance<TMarshallableKey>(), default};
         }
     }
 
@@ -158,15 +159,18 @@ namespace GServer.RPC
             base.ReadFromDs(ds);
             CustomReadFromDs(ds, (keyType, valueType) =>
             {
-                var kvp = (KeyValuePair<TMarshallableKey,TMarshallableValue>)GetCollectionElementInstance();
-                kvp.Key.ReadFromDs(ds);
-                kvp.Value.ReadFromDs(ds);
+                var objects = (object[])GetCollectionElementInstance();
+                var key = (TMarshallableKey) objects[0];
+                var value = (TMarshallableValue) objects[1];
+                key.ReadFromDs(ds);
+                value.ReadFromDs(ds);
+                Add(key, value);
             });
         }
         
         public override object GetCollectionElementInstance()
-        {
-            return new KeyValuePair<TMarshallableKey,TMarshallableValue>(Activator.CreateInstance<TMarshallableKey>(), Activator.CreateInstance<TMarshallableValue>());
+        {            
+            return new object[] {Activator.CreateInstance<TMarshallableKey>(), Activator.CreateInstance<TMarshallableValue>()};
         }
     }
 
