@@ -51,7 +51,7 @@ namespace GServer.RPC
 
                 CountClasses(targetClass);
 
-                FindInvokableMethods(targetClass, typeof(InvokeAttribute));
+                FindInvokableMethods(targetClass);
             }
         }
 
@@ -77,7 +77,7 @@ namespace GServer.RPC
 
                 CountClasses(targetClass);
 
-                FindInvokableMethods(targetClass, typeof(InvokeAttribute));
+                FindInvokableMethods(targetClass);
                 FindSyncFields(targetClass);
                 FindSyncProperties(targetClass);
             }
@@ -134,9 +134,9 @@ namespace GServer.RPC
             _properties.Add(GetUniqueClassString(targetClass), propertyMap);
         }
 
-        private void FindInvokableMethods(object targetClass, Type invokeSystemType)
+        private void FindInvokableMethods(object targetClass)
         {
-            var miInfos = ReflectionHelper.GetMethodsWithAttribute(targetClass.GetType(), invokeSystemType);
+            var miInfos = ReflectionHelper.GetMethodsWithAttribute(targetClass.GetType(), typeof(InvokeAttribute));
             foreach (var member in miInfos)
             {
                 var customAttributes = member.GetCustomAttributes(typeof(InvokeAttribute), false);

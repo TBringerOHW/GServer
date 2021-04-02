@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Linq;
 
 // ReSharper disable UseNullPropagation
 // ReSharper disable ArrangeAccessorOwnerBody
@@ -436,41 +440,10 @@ namespace GServer.Containers
                     Writer.Write(obj.ToString());
                     break;
             }
-            /*switch (typeName)
-            {
-                case "System.Int32":
-                    Writer.Write(int.Parse(obj.ToString()));
-                    break;
-                case "System.Byte":
-                    Writer.Write(byte.Parse(obj.ToString()));
-                    break;
-                case "System.Boolean":
-                    Writer.Write(bool.Parse(obj.ToString()));
-                    break;
-                case "System.Char":
-                    Writer.Write(char.Parse(obj.ToString()));
-                    break;
-                case "System.Decimal":
-                    Writer.Write(decimal.Parse(obj.ToString()));
-                    break;
-                case "System.Double":
-                    Writer.Write(double.Parse(obj.ToString()));
-                    break;
-                case "System.Single":
-                    Writer.Write(float.Parse(obj.ToString()));
-                    break;
-                case "System.Int64":
-                    Writer.Write(long.Parse(obj.ToString()));
-                    break;
-                case "System.Int16":
-                    Writer.Write(short.Parse(obj.ToString()));
-                    break;
-                case "System.String":
-                    Writer.Write(obj.ToString());
-                    break;
-            }*/
+
             return this;
-        } 
+        }
+        
         #endregion
 
         public byte[] ReadToEnd() {
