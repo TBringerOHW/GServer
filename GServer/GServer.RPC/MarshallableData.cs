@@ -5,7 +5,7 @@ using GServer.Containers;
 
 namespace GServer.RPC
 {
-    public class MarshallableList<TMarshallable> : List<TMarshallable>, IMarshallableCollection where TMarshallable : IMarshallable 
+    public class MarshallableList<TMarshallable> : List<TMarshallable>, IMarshallable, IMarshallableCollection where TMarshallable : IMarshallable
     {
         public void PushToDs(DataStorage ds)
         {
