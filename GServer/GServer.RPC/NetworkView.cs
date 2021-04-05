@@ -61,9 +61,7 @@ namespace GServer.RPC
                 if (!targetClass.GetType().IsClass) continue;
 
                 CountClasses(targetClass);
-
-                FindSyncFields(targetClass);
-                FindSyncProperties(targetClass);
+                RegisterSyncObject(targetClass);
             }
         }
 
@@ -77,12 +75,23 @@ namespace GServer.RPC
                 CountClasses(targetClass);
 
                 FindInvokableMethods(targetClass);
-                FindSyncFields(targetClass);
-                FindSyncProperties(targetClass);
+                RegisterSyncObject(targetClass);
             }
         }
 
-        private void FindSyncProperties(object targetClass)
+        private void RegisterSyncObject(object targetClass)
+        {
+            var propertyMap = FindSyncFields(targetClass);
+            foreach (var property in FindSyncProperties(targetClass))
+            {
+                propertyMap.Add(property.Key, property.Value);
+            }
+            
+            _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+            _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
+        }
+
+        private Dictionary<string, InfoHelper> FindSyncProperties(object targetClass)
         {
             var propInfos = ReflectionHelper.GetPropertiesWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
             var propertyMap = new Dictionary<string, InfoHelper>();
@@ -91,7 +100,6 @@ namespace GServer.RPC
             {
                 Console.WriteLine("Register property " + propInfo.Name);
                 NetworkController.ShowMessage("Register property " + propInfo.Name);
-                _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
                 var propName = propInfo.Name;
                 propertyMap.Add(propName, new InfoHelper(propInfo));
                 var nonBasicObj = ReflectionHelper.CheckNonBasicType(propInfo.PropertyType);
@@ -104,10 +112,10 @@ namespace GServer.RPC
                 }
             }
 
-            _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+            return propertyMap;
         }
 
-        private void FindSyncFields(object targetClass)
+        private Dictionary<string, InfoHelper> FindSyncFields(object targetClass)
         {
             var fieldInfos = ReflectionHelper.GetFieldsWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
             var propertyMap = new Dictionary<string, InfoHelper>();
@@ -119,7 +127,6 @@ namespace GServer.RPC
                 
                 var propName = fieldInfo.Name;
                 propertyMap.Add(propName, new InfoHelper(fieldInfo));
-                _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
                 var nonBasicObj = ReflectionHelper.CheckNonBasicType(fieldInfo.FieldType);
                 if (nonBasicObj != null)
                 {
@@ -129,8 +136,8 @@ namespace GServer.RPC
                     }
                 }
             }
-
-            _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+            
+            return propertyMap;
         }
 
         private void FindInvokableMethods(object targetClass)
