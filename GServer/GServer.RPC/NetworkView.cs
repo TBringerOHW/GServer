@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
+using RTW.BattleService.Module.RTW.Generic.Generic;
 
 namespace GServer.RPC
 {
@@ -67,7 +67,6 @@ namespace GServer.RPC
 
         public void InitInvoke(params object[] classes)
         {
-
             foreach (var targetClass in classes)
             {
                 if (!targetClass.GetType().IsClass) continue;
@@ -86,7 +85,7 @@ namespace GServer.RPC
             {
                 propertyMap.Add(property.Key, property.Value);
             }
-            
+
             _properties.Add(GetUniqueClassString(targetClass), propertyMap);
             _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
         }
@@ -95,10 +94,10 @@ namespace GServer.RPC
         {
             var propInfos = ReflectionHelper.GetPropertiesWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
             var propertyMap = new Dictionary<string, InfoHelper>();
-            Console.WriteLine(propInfos);
+            //Console.WriteLine(propInfos);
             foreach (var propInfo in propInfos)
             {
-                Console.WriteLine("Register property " + propInfo.Name);
+                this.LogObjectMessage(nameof(FindSyncProperties), "Registered property " + propInfo.Name, DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register property " + propInfo.Name);
                 var propName = propInfo.Name;
                 propertyMap.Add(propName, new InfoHelper(propInfo));
@@ -119,12 +118,12 @@ namespace GServer.RPC
         {
             var fieldInfos = ReflectionHelper.GetFieldsWithAttribute(targetClass.GetType(), new SyncAttribute().GetType());
             var propertyMap = new Dictionary<string, InfoHelper>();
-            Console.WriteLine(fieldInfos);
+            //Console.WriteLine(fieldInfos);
             foreach (var fieldInfo in fieldInfos)
             {
-                Console.WriteLine("Register field " + fieldInfo.Name);
+                this.LogObjectMessage(nameof(FindSyncProperties), "Registered field " + fieldInfo.Name, DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register field " + fieldInfo.Name);
-                
+
                 var propName = fieldInfo.Name;
                 propertyMap.Add(propName, new InfoHelper(fieldInfo));
                 var nonBasicObj = ReflectionHelper.CheckNonBasicType(fieldInfo.FieldType);
@@ -136,7 +135,7 @@ namespace GServer.RPC
                     }
                 }
             }
-            
+
             return propertyMap;
         }
 
@@ -156,8 +155,8 @@ namespace GServer.RPC
 
                 var methodName = GetUniqueClassString(targetClass) + "." + member.Name;
 
+                this.LogObjectMessage(nameof(FindSyncProperties), $"Registered method [{member}] as [{methodName}]", DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register method " + member + " as " + methodName);
-                Console.WriteLine("Register method " + member + " as " + methodName);
 
                 _methods.Add(methodName, new InvokeHelper(targetClass, member));
                 _netCon.RegisterInvoke(methodName, this);
@@ -170,7 +169,7 @@ namespace GServer.RPC
                     if (_methodsArguments.ContainsKey(param.Key)) continue;
                     _methodsArguments.Add(param.Key, param.Value);
                     NetworkController.ShowMessage($"Register non-basic type {param.Value.GetType()}");
-                    Console.WriteLine($"Register non-basic type {param.Value.GetType()}");
+                    this.LogObjectMessage(nameof(FindSyncProperties), $"Registered marshallable type [{param.Value.GetType()}]", DebugLogger.ELogMessageType.Info);
                 }
             }
         }
@@ -218,10 +217,10 @@ namespace GServer.RPC
                 NetworkController.ShowException(new Exception("object not invoked"));
                 return null;
             }
-            
+
             var uniqStr = $"{_hash}{c.GetType().Name}#{num}";
 
-            return uniqStr;//_hash + "_" + c + "#" + num;
+            return uniqStr; //_hash + "_" + c + "#" + num;
         }
 
         private IMarshallable GetArgument(string name)
@@ -231,38 +230,44 @@ namespace GServer.RPC
 
         internal void SyncNow()
         {
-            foreach (var one in _properties)
+            lock (_properties)
             {
-                if (!_stringToObject.TryGetValue(one.Key, out var c))
+                lock (_stringToObject)
                 {
-                    continue;
-                }
-
-                var method = GetSyncMethod(c);
-                
-                var ds = DataStorage.CreateForWrite();
-                ds.Push(method);
-                
-                var fields = GetClassFields(c);
-                if (fields.Count == 0)
-                {
-                    continue;
-                }
-
-                foreach (var field in fields)
-                {
-                    ds.Push(field.Key);
-                    if (field.Value is IMarshallable imObj)
+                    foreach (var one in _properties)
                     {
-                        PushCustomType(imObj, ds);
-                        continue;
+                        if (!_stringToObject.TryGetValue(one.Key, out var c))
+                        {
+                            continue;
+                        }
+
+                        var method = GetSyncMethod(c);
+
+                        var ds = DataStorage.CreateForWrite();
+                        ds.Push(method);
+
+                        var fields = GetClassFields(c);
+                        if (fields.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        foreach (var field in fields)
+                        {
+                            ds.Push(field.Key);
+                            if (field.Value is IMarshallable imObj)
+                            {
+                                PushCustomType(imObj, ds);
+                                continue;
+                            }
+
+                            PushBasicType(field.Value, ds);
+                        }
+
+                        NetworkController.Instance.SendMessage(ds, (short) MessageType.FieldsPropertiesSync);
+                        //NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCResend);
                     }
-
-                    PushBasicType(field.Value, ds);
                 }
-
-                NetworkController.Instance.SendMessage(ds, (short) MessageType.FieldsPropertiesSync);
-                //NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCResend);
             }
         }
 
@@ -334,11 +339,11 @@ namespace GServer.RPC
         {
             method = GetUniqueClassString(c) + "." + method;
             var helper = GetHelper(method);
-            
+
             if (helper == null) return;
-            
+
             ServerCall(method, args);
-            
+
             /* Obsolete
              
              switch (helper.type)
