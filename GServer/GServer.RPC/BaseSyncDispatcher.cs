@@ -69,6 +69,20 @@ namespace GServer.RPC
             while (true)
             {
                 networkView.SyncNow();
+
+                if (_queued)
+                {
+                    lock (Backlog)
+                    {
+                        foreach (var handlerAction in Backlog)
+                        {
+                            handlerAction.Invoke();
+                        }
+                        Backlog.Clear();
+                        _queued = false;
+                    }
+                }
+
                 yield return yieldInstruction;
             }
         }

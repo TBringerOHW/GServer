@@ -10,7 +10,7 @@ namespace GServer.RPC
             AddHandler((short) MessageType.RPCResend, HandleMulticast);
 
             AddHandler((short) MessageType.RPCSendToEndPoint, HandleRPCMessage);
-            
+
             AddHandler((short) MessageType.FieldsPropertiesSync, (m, c) =>
             {
                 //TODO Not implemented
@@ -40,15 +40,16 @@ namespace GServer.RPC
 
             NetworkController.Instance.RPCMessage(methodName, ds);
         }
-
+        
+#if UNITY_ENGINE
         protected override void InvokeHandler(ReceiveHandler handler, Message msg, Connection.Connection connection)
         {
             if (BaseSyncDispatcher.IsInitialized)
             {
                 BaseSyncDispatcher.RunOnMainThread(handler, msg, connection);
             }
-
-            base.InvokeHandler(handler, msg, connection);
         }
+#endif
+
     }
 }
