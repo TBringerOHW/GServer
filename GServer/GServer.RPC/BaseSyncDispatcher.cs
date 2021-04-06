@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using GServer.Messages;
 #if UNITY_ENGINE
+using System.Collections;
 using UnityEngine;
 #else
 using System.Threading;

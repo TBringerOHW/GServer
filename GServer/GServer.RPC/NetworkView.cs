@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
-using RTW.BattleService.Module.RTW.Generic.Generic;
 
 namespace GServer.RPC
 {

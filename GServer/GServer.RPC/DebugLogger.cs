@@ -3,7 +3,7 @@
 using UnityEngine;
 #endif
 
-namespace RTW.BattleService.Module.RTW.Generic.Generic
+namespace GServer.RPC
 {
     public static class DebugLogger
     {
