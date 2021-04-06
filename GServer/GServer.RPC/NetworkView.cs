@@ -96,7 +96,7 @@ namespace GServer.RPC
             //Console.WriteLine(propInfos);
             foreach (var propInfo in propInfos)
             {
-                this.LogObjectMessage(nameof(FindSyncProperties), "Registered property " + propInfo.Name, DebugLogger.ELogMessageType.Info);
+                this.LogObjectMessage(nameof(FindSyncProperties), $"Registered property [{propInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register property " + propInfo.Name);
                 var propName = propInfo.Name;
                 propertyMap.Add(propName, new InfoHelper(propInfo));
@@ -120,7 +120,7 @@ namespace GServer.RPC
             //Console.WriteLine(fieldInfos);
             foreach (var fieldInfo in fieldInfos)
             {
-                this.LogObjectMessage(nameof(FindSyncProperties), "Registered field " + fieldInfo.Name, DebugLogger.ELogMessageType.Info);
+                this.LogObjectMessage(nameof(FindSyncProperties), $"Registered field [{fieldInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register field " + fieldInfo.Name);
 
                 var propName = fieldInfo.Name;
