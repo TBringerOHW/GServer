@@ -103,9 +103,10 @@ namespace GServer.RPC
                 var nonBasicObj = ReflectionHelper.CheckNonBasicType(propInfo.PropertyType);
                 if (nonBasicObj != null)
                 {
-                    if (!_methodsArguments.ContainsKey(nonBasicObj.ToString()))
+                    var str = nonBasicObj.ToString();
+                    if (!_methodsArguments.ContainsKey(str))
                     {
-                        _methodsArguments.Add(nonBasicObj.ToString(), nonBasicObj as IMarshallable);
+                        _methodsArguments.Add(str, nonBasicObj as IMarshallable);
                     }
                 }
             }
@@ -120,7 +121,7 @@ namespace GServer.RPC
             //Console.WriteLine(fieldInfos);
             foreach (var fieldInfo in fieldInfos)
             {
-                this.LogObjectMessage(nameof(FindSyncProperties), $"Registered field [{fieldInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
+                this.LogObjectMessage(nameof(FindSyncFields), $"Registered field [{fieldInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register field " + fieldInfo.Name);
 
                 var propName = fieldInfo.Name;
@@ -128,9 +129,10 @@ namespace GServer.RPC
                 var nonBasicObj = ReflectionHelper.CheckNonBasicType(fieldInfo.FieldType);
                 if (nonBasicObj != null)
                 {
-                    if (!_methodsArguments.ContainsKey(nonBasicObj.ToString()))
+                    var str = nonBasicObj.ToString();
+                    if (!_methodsArguments.ContainsKey(str))
                     {
-                        _methodsArguments.Add(nonBasicObj.ToString(), nonBasicObj as IMarshallable);
+                        _methodsArguments.Add(str, nonBasicObj as IMarshallable);
                     }
                 }
             }
@@ -154,7 +156,7 @@ namespace GServer.RPC
 
                 var methodName = GetUniqueClassString(targetClass) + "." + member.Name;
 
-                this.LogObjectMessage(nameof(FindSyncProperties), $"Registered method [{member}] as [{methodName}]", DebugLogger.ELogMessageType.Info);
+                this.LogObjectMessage(nameof(FindInvokableMethods), $"Registered method [{member}] as [{methodName}]", DebugLogger.ELogMessageType.Info);
                 NetworkController.ShowMessage("Register method " + member + " as " + methodName);
 
                 _methods.Add(methodName, new InvokeHelper(targetClass, member));
@@ -168,7 +170,7 @@ namespace GServer.RPC
                     if (_methodsArguments.ContainsKey(param.Key)) continue;
                     _methodsArguments.Add(param.Key, param.Value);
                     NetworkController.ShowMessage($"Register non-basic type {param.Value.GetType()}");
-                    this.LogObjectMessage(nameof(FindSyncProperties), $"Registered marshallable type [{param.Value.GetType()}]", DebugLogger.ELogMessageType.Info);
+                    this.LogObjectMessage(nameof(FindInvokableMethods), $"Registered marshallable type [{param.Value.GetType()}]", DebugLogger.ELogMessageType.Info);
                 }
             }
         }
