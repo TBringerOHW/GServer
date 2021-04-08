@@ -231,44 +231,38 @@ namespace GServer.RPC
 
         internal void SyncNow()
         {
-            lock (_properties)
+            foreach (var one in _properties)
             {
-                lock (_stringToObject)
+                if (!_stringToObject.TryGetValue(one.Key, out var c))
                 {
-                    foreach (var one in _properties)
-                    {
-                        if (!_stringToObject.TryGetValue(one.Key, out var c))
-                        {
-                            continue;
-                        }
-
-                        var method = GetSyncMethod(c);
-
-                        var ds = DataStorage.CreateForWrite();
-                        ds.Push(method);
-
-                        var fields = GetClassFields(c);
-                        if (fields.Count == 0)
-                        {
-                            continue;
-                        }
-
-                        foreach (var field in fields)
-                        {
-                            ds.Push(field.Key);
-                            if (field.Value is IMarshallable imObj)
-                            {
-                                PushCustomType(imObj, ds);
-                                continue;
-                            }
-
-                            PushBasicType(field.Value, ds);
-                        }
-
-                        NetworkController.Instance.SendMessage(ds, (short) MessageType.FieldsPropertiesSync);
-                        //NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCResend);
-                    }
+                    continue;
                 }
+
+                var fields = GetClassFields(c);
+                if (fields.Count == 0)
+                {
+                    continue;
+                }
+
+
+                var ds = DataStorage.CreateForWrite();
+                
+                var method = GetSyncMethod(c);
+                ds.Push(method);
+
+                foreach (var field in fields)
+                {
+                    ds.Push(field.Key);
+                    if (field.Value is IMarshallable imObj)
+                    {
+                        PushCustomType(imObj, ds);
+                        continue;
+                    }
+
+                    PushBasicType(field.Value, ds);
+                }
+
+                NetworkController.Instance.SendMessage(ds, (short) MessageType.FieldsPropertiesSync);
             }
         }
 

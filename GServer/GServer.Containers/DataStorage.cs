@@ -48,6 +48,13 @@ namespace GServer.Containers
             Writer.Write(val);
             return this;
         }
+        
+        public DataStorage Push(ushort val) {
+            if (Writer == null)
+                throw new Exception("DataStorage in read only mode");
+            Writer.Write(val);
+            return this;
+        }
 
         public DataStorage Push(short val) {
             if (Writer == null)
@@ -271,6 +278,12 @@ namespace GServer.Containers
                 throw new Exception("DataStorage in write only mode");
             }
             return Reader.ReadBytes(count);
+        }
+        
+        public ushort ReadUInt16() {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+            return Reader.ReadUInt16();
         }
 
         public short ReadInt16() {
