@@ -262,7 +262,7 @@ namespace GServer.RPC
                     PushBasicType(field.Value, ds);
                 }
 
-                NetworkController.Instance.SendMessage(ds, (short) MessageType.FieldsPropertiesSync);
+                NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCSendToEndPoint);
             }
         }
 
@@ -290,13 +290,12 @@ namespace GServer.RPC
                     if (!_cache.ContainsKey(cacheKey))
                     {
                         _cache.Add(cacheKey, value.GetHashCode());
-                        result.Add(prop.Key, value);
                     }
                     else if (!_cache[cacheKey].Equals(value.GetHashCode()))
                     {
                         _cache[cacheKey] = value.GetHashCode();
-                        result.Add(prop.Key, value);
                     }
+                    result.Add(prop.Key, value);
                 }
             }
 
