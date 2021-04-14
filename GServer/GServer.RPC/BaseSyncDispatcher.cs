@@ -68,7 +68,7 @@ namespace GServer.RPC
             var yieldInstruction = new WaitForSeconds(networkView.GetSyncPeriod());
             while (true)
             {
-                networkView.SyncNow();
+                //networkView.SyncNow();
 
                 if (_queued)
                 {
