@@ -133,7 +133,6 @@ namespace GServer.Containers
             return this;
         }
 
-        [Obsolete]
         public DataStorage Push(IDeepSerializable val) {
             if (Writer == null)
                 throw new Exception("DataStorage in read only mode");
