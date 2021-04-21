@@ -55,7 +55,6 @@ namespace GServer
         private readonly ConnectionManager _connectionManager;
         private bool _isListening;
         private readonly IDictionary<short, IList<ReceiveHandler>> _receiveHandlers;
-        private int _connectionCleaningTick = 0;
 
         /// <summary>
         /// Interval in server ticks of disconnecting inactive connections 
