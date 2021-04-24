@@ -272,11 +272,24 @@ namespace GServer.Containers
             return Reader.ReadByte();
         }
 
+        public sbyte ReadSByte()
+        {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+            return Reader.ReadSByte();
+        }
+
         public byte[] ReadBytes(int count) {
             if (Reader == null) {
                 throw new Exception("DataStorage in write only mode");
             }
             return Reader.ReadBytes(count);
+        }
+
+        public short ReadInt16() {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+            return Reader.ReadInt16();
         }
         
         public ushort ReadUInt16() {
@@ -285,22 +298,28 @@ namespace GServer.Containers
             return Reader.ReadUInt16();
         }
 
-        public short ReadInt16() {
-            if (Reader == null)
-                throw new Exception("DataStorage in write only mode");
-            return Reader.ReadInt16();
-        }
-
         public int ReadInt32() {
             if (Reader == null)
                 throw new Exception("DataStorage in write only mode");
             return Reader.ReadInt32();
+        }
+        
+        public uint ReadUInt32() {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+            return Reader.ReadUInt32();
         }
 
         public long ReadInt64() {
             if (Reader == null)
                 throw new Exception("DataStorage in write only mode");
             return Reader.ReadInt64();
+        }
+        
+        public ulong ReadUInt64() {
+            if (Reader == null)
+                throw new Exception("DataStorage in write only mode");
+            return Reader.ReadUInt64();
         }
 
         public char ReadChar() {
@@ -368,17 +387,35 @@ namespace GServer.Containers
 
             switch (typeName)
             {
-                case "System.Int32":
-                    obj = ReadInt32();
-                    break;
-                case "System.Byte":
-                    obj = ReadByte();
-                    break;
                 case "System.Boolean":
                     obj = ReadBoolean();
                     break;
                 case "System.Char":
                     obj = ReadChar();
+                    break;
+                case "System.Byte":
+                    obj = ReadByte();
+                    break;
+                case "System.SByte":
+                    obj = ReadSByte();
+                    break;
+                case "System.Int16":
+                    obj = ReadInt16();
+                    break;
+                case "System.UInt16":
+                    obj = ReadUInt16();
+                    break;
+                case "System.Int32":
+                    obj = ReadInt32();
+                    break;
+                case "System.UInt32":
+                    obj = ReadUInt32();
+                    break;
+                case "System.Int64":
+                    obj = ReadInt64();
+                    break;
+                case "System.UInt64":
+                    obj = ReadUInt64();
                     break;
                 case "System.Decimal":
                     obj = ReadDecimal();
@@ -388,12 +425,6 @@ namespace GServer.Containers
                     break;
                 case "System.Single":
                     obj = ReadFloat();
-                    break;
-                case "System.Int64":
-                    obj = ReadInt64();
-                    break;
-                case "System.Int16":
-                    obj = ReadInt16();
                     break;
                 case "System.String":
                     obj = ReadString();
@@ -412,17 +443,35 @@ namespace GServer.Containers
             
             switch (typeName)
             {
-                case "System.Int32":
-                    Writer.Write((int)obj);
-                    break;
-                case "System.Byte":
-                    Writer.Write((byte)obj);
-                    break;
                 case "System.Boolean":
                     Writer.Write((bool)obj);
                     break;
                 case "System.Char":
                     Writer.Write((char)obj);
+                    break;
+                case "System.Byte":
+                    Writer.Write((byte)obj);
+                    break;
+                case "System.SByte":
+                    Writer.Write((sbyte)obj);
+                    break;
+                case "System.Int16":
+                    Writer.Write((short)obj);
+                    break;
+                case "System.UInt16":
+                    Writer.Write((ushort)obj);
+                    break;
+                case "System.Int32":
+                    Writer.Write((int)obj);
+                    break;
+                case "System.UInt32":
+                    Writer.Write((uint)obj);
+                    break;
+                case "System.Int64":
+                    Writer.Write((long)obj);
+                    break;
+                case "System.UInt64":
+                    Writer.Write((ulong)obj);
                     break;
                 case "System.Decimal":
                     Writer.Write((decimal)obj);
@@ -432,12 +481,6 @@ namespace GServer.Containers
                     break;
                 case "System.Single":
                     Writer.Write((float)obj);
-                    break;
-                case "System.Int64":
-                    Writer.Write((long)obj);
-                    break;
-                case "System.Int16":
-                    Writer.Write((short)obj);
                     break;
                 case "System.String":
                     Writer.Write(obj.ToString());
