@@ -149,7 +149,7 @@ namespace GServer.RPC
             _host.Send(message);
         }
 
-        public void SendMessage(DataStorage dataStorage, short messageType, Mode mode = Mode.None)
+        public void SendMessage(DataStorage dataStorage, short messageType, Mode mode = Mode.Reliable)
         {
             _host.Send(new Message(messageType, mode, dataStorage));
         }
