@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
@@ -231,38 +232,41 @@ namespace GServer.RPC
 
         internal void SyncNow()
         {
-            foreach (var one in _properties)
+            lock (_properties)
             {
-                if (!_stringToObject.TryGetValue(one.Key, out var c))
+                foreach (var one in _properties.Keys.ToList())
                 {
-                    continue;
-                }
-
-                var fields = GetClassFields(c);
-                if (fields.Count == 0)
-                {
-                    continue;
-                }
-
-
-                var ds = DataStorage.CreateForWrite();
-                
-                var method = GetSyncMethod(c);
-                ds.Push(method);
-
-                foreach (var field in fields)
-                {
-                    ds.Push(field.Key);
-                    if (field.Value is IMarshallable imObj)
+                    if (!_stringToObject.TryGetValue(one, out var c))
                     {
-                        PushCustomType(imObj, ds);
                         continue;
                     }
 
-                    PushBasicType(field.Value, ds);
-                }
+                    var fields = GetClassFields(c);
+                    if (fields.Count == 0)
+                    {
+                        continue;
+                    }
 
-                NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCSendToEndPoint);
+
+                    var ds = DataStorage.CreateForWrite();
+
+                    var method = GetSyncMethod(c);
+                    ds.Push(method);
+
+                    foreach (var field in fields)
+                    {
+                        ds.Push(field.Key);
+                        if (field.Value is IMarshallable imObj)
+                        {
+                            PushCustomType(imObj, ds);
+                            continue;
+                        }
+
+                        PushBasicType(field.Value, ds);
+                    }
+
+                    NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCSendToEndPoint);
+                }
             }
         }
 
@@ -295,6 +299,7 @@ namespace GServer.RPC
                     {
                         _cache[cacheKey] = value.GetHashCode();
                     }
+
                     result.Add(prop.Key, value);
                 }
             }
