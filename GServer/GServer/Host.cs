@@ -129,20 +129,27 @@ namespace GServer
         private void Listen(int port) {
             _client.Bind(new IPEndPoint(IPAddress.Any, port));
             while (_isListening) {
-                if (_client.Available <= 0) continue;
-                IPEndPoint endPoint = null;
-                var buffer = _client.Receive(ref endPoint);
-                if (buffer == null) {
+                if (_client.Available <= 0) {
+                    Thread.Sleep(50);
                     continue;
                 }
-                if (buffer.Length == 0)
+                IPEndPoint endPoint = null;
+                var buffer = _client.Receive(ref endPoint);
+                if (buffer == null || buffer.Length == 0) {
+                    Thread.Sleep(50);
                     continue;
+                }
                 var ds = DataStorage.CreateForRead(buffer);
                 while (!ds.Empty) {
                     var len = ds.ReadInt32();
                     var msg = Message.Deserialize(ds.ReadBytes(len));
                     Connection.Connection connection;
-                    if (!_connectionManager.TryGetConnection(out connection, msg, endPoint)) continue;
+                    
+                    if (!_connectionManager.TryGetConnection(out connection, msg, endPoint)) {
+                        Thread.Sleep(50);
+                        continue;
+                    }
+                    
                     if (AllowedTokens.IsAccepted(connection.Token)) {
                         ProcessDatagram(msg, connection);
                     }
