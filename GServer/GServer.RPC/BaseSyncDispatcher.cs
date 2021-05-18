@@ -17,15 +17,10 @@ namespace GServer.RPC
 #endif
     {
         private static BaseSyncDispatcher _instance;
-        private static volatile bool _queued = false;
+        private static volatile bool _queued;
         protected static readonly List<HandlerAction> Backlog = new List<HandlerAction>();
 
-        protected static List<HandlerAction> Actions = new List<HandlerAction>();
-
-        public static bool IsInitialized
-        {
-            get => _instance != null;
-        }
+        public static bool IsInitialized => _instance != null;
 
         protected class HandlerAction
         {
@@ -51,7 +46,7 @@ namespace GServer.RPC
         #region [Platform Depended Code]
 
 #if UNITY_ENGINE
-        private static Dictionary<int, Coroutine> _networkViewCoroutines = new Dictionary<int, Coroutine>();
+        private static readonly Dictionary<int, Coroutine> NetworkViewCoroutines = new Dictionary<int, Coroutine>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Initialize()
@@ -63,13 +58,10 @@ namespace GServer.RPC
             }
         }
 
-        private IEnumerator SyncCoroutine(NetworkView networkView)
+        private IEnumerator SyncCoroutine()
         {
-            var yieldInstruction = new WaitForSeconds(networkView.GetSyncPeriod());
             while (true)
             {
-                //networkView.SyncNow();
-
                 if (_queued)
                 {
                     lock (Backlog)
@@ -83,25 +75,26 @@ namespace GServer.RPC
                     }
                 }
 
-                yield return yieldInstruction;
+                yield return null;
             }
+            // ReSharper disable once IteratorNeverReturns
         }
 
         internal static void StartSync(NetworkView networkView)
         {
-            var coroutine = _instance.StartCoroutine(_instance.SyncCoroutine(networkView));
-            _networkViewCoroutines.Add(networkView.GetHashCode(), coroutine);
+            var coroutine = _instance.StartCoroutine(_instance.SyncCoroutine());
+            NetworkViewCoroutines.Add(networkView.GetHashCode(), coroutine);
         }
 
         internal static void StopSync(NetworkView networkView)
         {
             var hash = networkView.GetHashCode();
 
-            if (_networkViewCoroutines.ContainsKey(hash))
+            if (NetworkViewCoroutines.ContainsKey(hash))
             {
-                var coroutine = _networkViewCoroutines[hash];
+                var coroutine = NetworkViewCoroutines[hash];
                 _instance.StopCoroutine(coroutine);
-                _networkViewCoroutines.Remove(hash);
+                NetworkViewCoroutines.Remove(hash);
             }
         }
 
