@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
@@ -105,7 +105,7 @@ namespace GServer.RPC
                 if (nonBasicObj != null)
                 {
                     var str = nonBasicObj.ToString();
-                    if (!_methodsArguments.ContainsKey(str))
+                    if (!_methodsArguments.ContainsKey(str ?? throw new InvalidOperationException()))
                     {
                         _methodsArguments.Add(str, nonBasicObj as IMarshallable);
                     }
@@ -131,7 +131,7 @@ namespace GServer.RPC
                 if (nonBasicObj != null)
                 {
                     var str = nonBasicObj.ToString();
-                    if (!_methodsArguments.ContainsKey(str))
+                    if (!_methodsArguments.ContainsKey(str ?? throw new InvalidOperationException()))
                     {
                         _methodsArguments.Add(str, nonBasicObj as IMarshallable);
                     }
@@ -179,7 +179,7 @@ namespace GServer.RPC
         private void CountClasses(object targetClass)
         {
             var key = targetClass.ToString();
-            if (_countOfClasses.TryGetValue(key, out var num))
+            if (_countOfClasses.TryGetValue(key ?? throw new InvalidOperationException(), out var num))
             {
                 num += 1;
                 _countOfClasses.Remove(key);
@@ -227,46 +227,59 @@ namespace GServer.RPC
 
         private IMarshallable GetArgument(string name)
         {
-            return _methodsArguments.TryGetValue(name, out var arg) ? arg : null;
+            if (!_methodsArguments.TryGetValue(name, out var arg))
+            {
+                return null;
+            }
+
+            if (arg is IList)
+            {
+                return (IMarshallable)Activator.CreateInstance(arg.GetType());
+            }
+            
+            return arg;
         }
 
         internal void SyncNow()
         {
+            string[] propClone;
             lock (_properties)
             {
-                foreach (var one in _properties.Keys.ToList())
+                propClone = new string[_properties.Keys.Count];
+                _properties.Keys.CopyTo(propClone, 0);
+            }
+
+            foreach (var one in propClone)
+            {
+                if (!_stringToObject.TryGetValue(one, out var c))
                 {
-                    if (!_stringToObject.TryGetValue(one, out var c))
-                    {
-                        continue;
-                    }
-
-                    var fields = GetClassFields(c);
-                    if (fields.Count == 0)
-                    {
-                        continue;
-                    }
-
-
-                    var ds = DataStorage.CreateForWrite();
-
-                    var method = GetSyncMethod(c);
-                    ds.Push(method);
-
-                    foreach (var field in fields)
-                    {
-                        ds.Push(field.Key);
-                        if (field.Value is IMarshallable imObj)
-                        {
-                            PushCustomType(imObj, ds);
-                            continue;
-                        }
-
-                        PushBasicType(field.Value, ds);
-                    }
-
-                    NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCSendToEndPoint);
+                    continue;
                 }
+
+                var fields = GetClassFields(c);
+                if (fields.Count == 0)
+                {
+                    continue;
+                }
+
+                var ds = DataStorage.CreateForWrite();
+
+                var method = GetSyncMethod(c);
+                ds.Push(method);
+
+                foreach (var field in fields)
+                {
+                    ds.Push(field.Key);
+                    if (field.Value is IMarshallable imObj)
+                    {
+                        PushCustomType(imObj, ds);
+                        continue;
+                    }
+
+                    PushBasicType(field.Value, ds);
+                }
+
+                NetworkController.Instance.SendMessage(ds, (short) MessageType.RPCSendToEndPoint);
             }
         }
 
