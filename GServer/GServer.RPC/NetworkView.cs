@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
+//#define LOG_ENABLED
 
 namespace GServer.RPC
 {
@@ -86,7 +87,10 @@ namespace GServer.RPC
                 propertyMap.Add(property.Key, property.Value);
             }
 
-            _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+            lock (_properties)
+            {
+                _properties.Add(GetUniqueClassString(targetClass), propertyMap);
+            }
             _netCon.RegisterInvoke(GetSyncMethod(targetClass), this);
         }
 
@@ -97,7 +101,9 @@ namespace GServer.RPC
             //Console.WriteLine(propInfos);
             foreach (var propInfo in propInfos)
             {
+#if LOG_ENABLED
                 this.LogObjectMessage(nameof(FindSyncProperties), $"Registered property [{propInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
+#endif
                 NetworkController.ShowMessage("Register property " + propInfo.Name);
                 var propName = propInfo.Name;
                 propertyMap.Add(propName, new InfoHelper(propInfo));
@@ -122,7 +128,9 @@ namespace GServer.RPC
             //Console.WriteLine(fieldInfos);
             foreach (var fieldInfo in fieldInfos)
             {
+#if LOG_ENABLED
                 this.LogObjectMessage(nameof(FindSyncFields), $"Registered field [{fieldInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
+#endif
                 NetworkController.ShowMessage("Register field " + fieldInfo.Name);
 
                 var propName = fieldInfo.Name;
@@ -156,8 +164,9 @@ namespace GServer.RPC
                 }
 
                 var methodName = GetUniqueClassString(targetClass) + "." + member.Name;
-
+#if LOG_ENABLED
                 this.LogObjectMessage(nameof(FindInvokableMethods), $"Registered method [{member}] as [{methodName}]", DebugLogger.ELogMessageType.Info);
+#endif
                 NetworkController.ShowMessage("Register method " + member + " as " + methodName);
 
                 _methods.Add(methodName, new InvokeHelper(targetClass, member));
@@ -171,7 +180,9 @@ namespace GServer.RPC
                     if (_methodsArguments.ContainsKey(param.Key)) continue;
                     _methodsArguments.Add(param.Key, param.Value);
                     NetworkController.ShowMessage($"Register non-basic type {param.Value.GetType()}");
+#if LOG_ENABLED
                     this.LogObjectMessage(nameof(FindInvokableMethods), $"Registered marshallable type [{param.Value.GetType()}]", DebugLogger.ELogMessageType.Info);
+#endif
                 }
             }
         }
@@ -291,7 +302,13 @@ namespace GServer.RPC
         private Dictionary<string, object> GetClassFields(object c)
         {
             var result = new Dictionary<string, object>();
-            if (_properties.TryGetValue(GetUniqueClassString(c), out var props))
+
+            Dictionary<string, InfoHelper> props;
+            lock (_properties)
+            {
+                _properties.TryGetValue(GetUniqueClassString(c), out props);
+            }
+            if (props != null)
             {
                 foreach (var prop in props)
                 {
@@ -420,10 +437,13 @@ namespace GServer.RPC
             if (split.Length != 2) return;
             var strObj = split[1];
             if (!_stringToObject.TryGetValue(strObj, out var c)) return;
-            if (!_properties.TryGetValue(strObj, out var props))
+            
+            Dictionary<string, InfoHelper> props;
+            lock (_properties)
             {
-                return;
+                _properties.TryGetValue(GetUniqueClassString(c), out props);
             }
+            if (props == null) return;
 
             while (!ds.Empty)
             {
