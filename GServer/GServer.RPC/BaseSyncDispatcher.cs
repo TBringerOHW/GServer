@@ -113,7 +113,7 @@ namespace GServer.RPC
             var syncPeriod = (int) networkView.GetSyncPeriod();
 
             var timer = new Timer(o => SyncAction(networkView));
-            timer.Change(20, syncPeriod);
+            timer.Change(100, syncPeriod);
             Timers.Add(networkView, timer);
         }
 

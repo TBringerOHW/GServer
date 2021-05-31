@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using GServer.Containers;
 using GServer.Messages;
-//#define LOG_ENABLED
 
 namespace GServer.RPC
 {
@@ -13,6 +12,14 @@ namespace GServer.RPC
         private const string SyncMethodPrefix = "syncObject@";
 
         private readonly int _hash;
+        
+#if UNITY_ENGINE
+        public static int CountOfViews
+        {
+            get { return _countOfViews; }
+            set { _countOfViews = value; }
+        }
+#endif
 
         private static int _countOfViews;
         private float _syncPeriod;
@@ -34,6 +41,14 @@ namespace GServer.RPC
 
         public NetworkView(float syncPeriod = 1f)
         {
+            _methods.Clear();
+            _properties.Clear();
+            _methodsArguments.Clear();
+            _countOfClasses.Clear();
+            _stringToObject.Clear();
+            _cache.Clear();
+            _hashToNum.Clear();
+            
             _syncPeriod = syncPeriod;
             _hash = ++_countOfViews;
         }
@@ -101,7 +116,7 @@ namespace GServer.RPC
             //Console.WriteLine(propInfos);
             foreach (var propInfo in propInfos)
             {
-#if LOG_ENABLED
+#if DEBUG_LOG_RPC_NETVIEW
                 this.LogObjectMessage(nameof(FindSyncProperties), $"Registered property [{propInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
 #endif
                 NetworkController.ShowMessage("Register property " + propInfo.Name);
@@ -128,7 +143,7 @@ namespace GServer.RPC
             //Console.WriteLine(fieldInfos);
             foreach (var fieldInfo in fieldInfos)
             {
-#if LOG_ENABLED
+#if DEBUG_LOG_RPC_NETVIEW
                 this.LogObjectMessage(nameof(FindSyncFields), $"Registered field [{fieldInfo.Name}] for object [{targetClass}]", DebugLogger.ELogMessageType.Info);
 #endif
                 NetworkController.ShowMessage("Register field " + fieldInfo.Name);
@@ -164,7 +179,7 @@ namespace GServer.RPC
                 }
 
                 var methodName = GetUniqueClassString(targetClass) + "." + member.Name;
-#if LOG_ENABLED
+#if DEBUG_LOG_RPC_NETVIEW
                 this.LogObjectMessage(nameof(FindInvokableMethods), $"Registered method [{member}] as [{methodName}]", DebugLogger.ELogMessageType.Info);
 #endif
                 NetworkController.ShowMessage("Register method " + member + " as " + methodName);
@@ -180,7 +195,7 @@ namespace GServer.RPC
                     if (_methodsArguments.ContainsKey(param.Key)) continue;
                     _methodsArguments.Add(param.Key, param.Value);
                     NetworkController.ShowMessage($"Register non-basic type {param.Value.GetType()}");
-#if LOG_ENABLED
+#if DEBUG_LOG_RPC_NETVIEW
                     this.LogObjectMessage(nameof(FindInvokableMethods), $"Registered marshallable type [{param.Value.GetType()}]", DebugLogger.ELogMessageType.Info);
 #endif
                 }
