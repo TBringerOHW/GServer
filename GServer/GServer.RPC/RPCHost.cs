@@ -1,20 +1,30 @@
-﻿using GServer.Containers;
+﻿using System;
+using GServer.Containers;
 using GServer.Messages;
 
 namespace GServer.RPC
 {
     public class RPCHost : Host
     {
+        public event Action<DateTime> PingMessageReceived;
         public RPCHost(int port) : base(port)
         {
             AddHandler((short) MessageType.RPCResend, HandleMulticast);
 
             AddHandler((short) MessageType.RPCSendToEndPoint, HandleRPCMessage);
+            
+            AddHandler((short) MessageType.Ping, HandlePingMessage);
 
             AddHandler((short) MessageType.FieldsPropertiesSync, (m, c) =>
             {
                 //TODO Not implemented
             });
+        }
+
+        private void HandlePingMessage(Message msg, Connection.Connection con)
+        {
+            var date = DateTime.FromBinary(BitConverter.ToInt64(msg.Body, 0));
+            PingMessageReceived?.Invoke(date);
         }
 
         protected virtual void HandleMulticast(Message m, Connection.Connection c)

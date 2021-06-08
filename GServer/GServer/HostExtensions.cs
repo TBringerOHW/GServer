@@ -1,4 +1,5 @@
-﻿using GServer.Messages;
+﻿using System;
+using GServer.Messages;
 
 namespace GServer
 {
@@ -10,6 +11,16 @@ namespace GServer
             {
                 if (connection.EndPoint == null) continue;
                 host.Send(new Message((short)MessageType.Ping, Mode.Reliable), connection);
+            }
+        }
+        
+        public static void PingWithTimeStamp(this Host host)
+        {
+            foreach (var connection in host.GetConnections())
+            {
+                if (connection.EndPoint == null) continue;
+                
+                host.Send(new Message((short)MessageType.Ping, Mode.Reliable, BitConverter.GetBytes(DateTime.Now.Ticks)), connection);
             }
         }
     }
