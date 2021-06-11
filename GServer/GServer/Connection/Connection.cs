@@ -63,6 +63,7 @@ namespace GServer.Connection
         public IPEndPoint EndPoint { get; set; }
         public readonly Token Token;
         public DateTime LastActivity { get; private set; }
+        
 
         public Connection(IPEndPoint endPoint)
             : this(endPoint, Token.GenerateToken()) { }
@@ -89,8 +90,46 @@ namespace GServer.Connection
                 }
             }
         }
-
         
+        public int BufferCountWithResend
+        {
+            get
+            {
+                int count;
+                lock (_messageBuffer)
+                {
+                    count = _messageBuffer.Count(packet => packet.Resend);
+                }
+                return count;
+            }
+        }
+
+        public int BufferCountWithoutResend
+        {
+            get
+            {
+                int count;
+                lock (_messageBuffer)
+                {
+                    count = _messageBuffer.Count(packet => !packet.Resend);
+                }
+                return count;
+            }
+        }
+        
+        public int ReliableMessageCount
+        {
+            get
+            {
+                int count;
+                lock (_messageBuffer)
+                {
+                    count = _messageBuffer.Count(packet => !packet.Msg.Reliable);
+                }
+                return count;
+            }
+        }
+
         
         private readonly List<Packet> _messageBuffer = new List<Packet>();
 
@@ -100,10 +139,18 @@ namespace GServer.Connection
                 _messageBuffer.Add(p);
             }
         }
+        
+        private const long PacketSizeLimit = 4096;
+        private const int PacketsAmountLimit = 512;
 
-        internal byte[] GetBytesToSend() {
+        internal List<byte[]> GetPacketsToSend(long packetSizeLimit = PacketSizeLimit)
+        {
             var i = 0;
             var toSend = new List<Packet>();
+            var ds = DataStorage.CreateForWrite();
+            var packetsToSend = new List<byte[]>();
+
+            long packetLength = 0;
             lock (_ackPerMsgType) {
                 foreach (var ack in _ackPerMsgType) {
                     var buffer = ack.Value.GetAcks();
@@ -111,7 +158,88 @@ namespace GServer.Connection
                     if (Equals(buffer, Ack.Empty)) continue;
                     foreach (var msg in buffer) {
                         i++;
-                        toSend.Add(new Packet(Message.Ack(ack.Key, msg.Val1, Token, msg.Val2)));
+
+                        if (packetLength >= packetSizeLimit)
+                        {
+                            foreach (var element in toSend) {
+                                ds.Push(element.Serialize());
+                            }
+                            packetsToSend.Add(ds.Serialize());
+                            ds.Clear();
+                            toSend.Clear();
+                            packetLength = 0;
+                        }
+                        
+                        var packet = new Packet(Message.Ack(ack.Key, msg.Val1, Token, msg.Val2));
+                        packetLength += packet.Msg.Body.Length;
+                        
+                        toSend.Add(packet);
+                    }
+                }
+            }
+            lock (_messageBuffer) {
+                var toDelete = new List<Packet>();
+                _messageBuffer.Sort((x, y) => {
+                    var p = x.Priority.CompareTo(y.Priority);
+                    return p == 0 ? x.Msg.MessageId.CompareTo(y.Msg.MessageId) : -p;
+                });
+                if (_messageBuffer.Count > PacketsAmountLimit) Console.WriteLine($"[Info][{DateTime.Now}][GServer.Connection][{nameof(GetPacketsToSend)}] _messageBuffer.Count [{_messageBuffer.Count}] > [{PacketsAmountLimit}]! Reliable count = [{ReliableMessageCount:###}]. Resend count = [{BufferCountWithResend:###}]. No Resend count = [{BufferCountWithoutResend:###}]");
+                for (; i < PacketsAmountLimit && i < _messageBuffer.Count; i++) {
+                
+                    if (packetLength >= packetSizeLimit)
+                    {
+                        foreach (var element in toSend) {
+                            ds.Push(element.Serialize());
+                        }
+                        packetsToSend.Add(ds.Serialize());
+                        ds.Clear();
+                        toSend.Clear();
+                        packetLength = 0;
+                    }
+                    
+                    packetLength += _messageBuffer[i].Msg.Body.Length;
+                    toSend.Add(_messageBuffer[i]);
+                    
+                    if (!_messageBuffer[i].Resend) {
+                        toDelete.Add(_messageBuffer[i]);
+                    }
+                }
+                for (; i < _messageBuffer.Count; i++) {
+                    _messageBuffer[i].Priority++;
+                }
+
+                foreach (var element in toDelete) {
+                    _messageBuffer.Remove(element);
+                }
+            }
+
+            if (toSend.Count > 0)
+            {
+                foreach (var element in toSend) {
+                    ds.Push(element.Serialize());
+                }
+                packetsToSend.Add(ds.Serialize());
+            }
+            return packetsToSend;
+        }
+
+        internal byte[] GetBytesToSend() {
+            var i = 0;
+            var toSend = new List<Packet>();
+            long packetLength = 0;
+            lock (_ackPerMsgType) {
+                foreach (var ack in _ackPerMsgType) {
+                    var buffer = ack.Value.GetAcks();
+
+                    if (Equals(buffer, Ack.Empty)) continue;
+                    foreach (var msg in buffer) {
+                        i++;
+                        
+                        if (packetLength >= PacketSizeLimit) break;
+                        var packet = new Packet(Message.Ack(ack.Key, msg.Val1, Token, msg.Val2));
+                        packetLength += packet.Msg.Body.Length;
+                        
+                        toSend.Add(packet);
                     }
                 }
             }
@@ -122,6 +250,10 @@ namespace GServer.Connection
                     return p == 0 ? x.Msg.MessageId.CompareTo(y.Msg.MessageId) : -p;
                 });
                 for (; i < 128 && i < _messageBuffer.Count; i++) {
+                    
+                    if (packetLength >= PacketSizeLimit) break;
+                    packetLength += _messageBuffer[i].Msg.Body.Length;
+                    
                     toSend.Add(_messageBuffer[i]);
                     if (!_messageBuffer[i].Resend) {
                         toDelete.Add(_messageBuffer[i]);

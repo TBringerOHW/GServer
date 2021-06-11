@@ -106,10 +106,12 @@ namespace GServer
 
         private void ServerTick() {
             _connectionManager.InvokeForAllConnections(c => {
-                var buffer = c.GetBytesToSend();
-                if (buffer.Length > 0) {
-                    _client.Send(buffer, c.EndPoint);
-                }
+                c.GetPacketsToSend().ForEach(packet => _client.Send(packet, c.EndPoint));
+                /*↑Same code for easy debug.
+                var packets = c.GetPacketsToSend(300);
+                foreach (var packet in packets)
+                    _client.Send(packet, c.EndPoint);
+                */
             });
             if (OnTick != null) OnTick.Invoke();
         }

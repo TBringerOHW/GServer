@@ -502,6 +502,11 @@ namespace GServer.Containers
             get { return Stream.Position == Stream.Length; }
         }
 
+        public void Clear()
+        {
+            if (Stream != null) Stream.SetLength(0);
+        }
+
         public void Dispose() {
             if (Reader != null) Reader.Close();
             if (Writer != null) Writer.Close();
