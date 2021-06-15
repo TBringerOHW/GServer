@@ -16,8 +16,13 @@ namespace GServer.RPC
         : MonoBehaviour
 #endif
     {
+#pragma warning disable 649
         private static BaseSyncDispatcher _instance;
+#pragma warning restore 649
+#pragma warning disable 414
         private static volatile bool _queued;
+#pragma warning restore 414
+        // ReSharper disable once CollectionNeverQueried.Global
         protected static readonly List<HandlerAction> Backlog = new List<HandlerAction>();
 
         public static bool IsInitialized => _instance != null;

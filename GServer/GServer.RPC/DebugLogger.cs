@@ -42,6 +42,33 @@ namespace GServer.RPC
 		#endif
 		}
 
+		public static void LogMessage(string className, string methodName, string message, ELogMessageType messageType = ELogMessageType.Default)
+		{
+#if UNITY_ENGINE
+            message = $"[{className}] [{methodName}] [{message}]";
+            switch (messageType)
+            {
+                case ELogMessageType.Default:
+                    Debug.Log(message);
+                    break;
+                case ELogMessageType.Info:
+                    Debug.Log(message);
+                    break;
+                case ELogMessageType.Warning:
+                    Debug.LogWarning(message);
+                    break;
+                case ELogMessageType.Error:
+                    Debug.LogError(message);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(messageType), messageType, null);
+            }
+#else
+			message = $"[{messageType}] [{DateTime.Now}] [{className}] [{methodName}] {message}";
+			Console.WriteLine(message);
+#endif
+		}
+
 		public static void LogMessage(object obj, string message, ELogMessageType messageType = ELogMessageType.Default)
 		{
 		#if UNITY_ENGINE
